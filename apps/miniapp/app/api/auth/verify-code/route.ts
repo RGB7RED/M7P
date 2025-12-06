@@ -79,7 +79,21 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    console.error('Ошибка в verify-code', error);
-    return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
+    console.error('[API ERROR]', error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : JSON.stringify(error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: message,
+      },
+      { status: 500 },
+    );
   }
 }
