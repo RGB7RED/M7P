@@ -86,7 +86,21 @@ export async function POST(req: Request) {
       dev_code: isDevEnv ? code : undefined,
     });
   } catch (error) {
-    console.error('Ошибка в request-code', error);
-    return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
+    console.error('[API ERROR]', error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : JSON.stringify(error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: message,
+      },
+      { status: 500 },
+    );
   }
 }
