@@ -179,3 +179,19 @@
   - Добавлен SQL-скрипт для Supabase, создающий таблицы `users` и `auth_codes` под авторизацию через Telegram @username + одноразовый код.
   - Уточнён текущий подход к схеме БД: на этом этапе структура задаётся через SQL-скрипты для Supabase (Prisma остаётся в стеке как потенциальный ORM на следующих этапах).
 
+### Авторизация через Telegram @username + одноразовый код (дата: 2025-12-07)
+- Затронутые файлы и папки:
+  - `apps/miniapp/app/api/auth/request-code/route.ts`
+  - `apps/miniapp/app/api/auth/verify-code/route.ts`
+  - `apps/miniapp/lib/currentUser.ts`
+  - `apps/miniapp/lib/auth.ts`
+  - `apps/miniapp/lib/supabaseConfig.ts`
+  - `apps/miniapp/components/AuthForm.tsx`
+  - `apps/miniapp/app/(auth-related files)`
+  - `apps/miniapp/app/globals.css`
+  - `README.md`
+- Краткое описание:
+  - Реализован backend-поток авторизации: запрос кода по @username, сохранение кодов в таблице `auth_codes`, проверка кода, создание/чтение пользователя в таблице `users`, выдача JWT-сессии в HttpOnly-cookie.
+  - Добавлен frontend-UI авторизации в Mini App (двухшаговая форма ввода username и кода), ограничивающий доступ к разделам платформы без входа.
+  - Добавлена утилита определения текущего пользователя на серверной стороне для использования в layout и дальнейших разделах.
+
