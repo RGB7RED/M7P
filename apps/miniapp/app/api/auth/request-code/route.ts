@@ -10,12 +10,35 @@ async function sendTelegramCode(username: string, code: string) {
     return { delivery: 'mock' as const };
   }
 
+  const normalizedUsername = normalizeTelegramUsername(username);
+  const supabase = getServiceSupabaseClient();
+
+  const { data: user, error: lookupError } = await supabase
+    .from('users')
+    .select('telegram_chat_id')
+    .eq('telegram_username', normalizedUsername)
+    .maybeSingle();
+
+  if (lookupError) {
+    console.error('sendTelegramCode: ошибка поиска пользователя', lookupError);
+    return { delivery: 'mock' as const };
+  }
+
+  const telegramChatId = user?.telegram_chat_id;
+
+  if (!telegramChatId) {
+    console.warn('sendTelegramCode: у пользователя нет telegram_chat_id, показываем код в UI', {
+      username: normalizedUsername,
+    });
+    return { delivery: 'mock' as const };
+  }
+
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: `@${username}`,
+        chat_id: telegramChatId,
         text: `Ваш код авторизации для М7: ${code}. Никому его не сообщайте.`,
       }),
     });
