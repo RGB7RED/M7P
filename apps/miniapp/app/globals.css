@@ -317,6 +317,49 @@ main {
   color: var(--text);
 }
 
+.card-section {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.card-section-error {
+  border-color: rgba(248, 113, 113, 0.4);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+}
+
+.purpose-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.purpose-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.purpose-title {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.purpose-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .toggle-grid {
   display: grid;
   gap: 8px;
