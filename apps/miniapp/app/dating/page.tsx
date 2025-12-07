@@ -2,16 +2,11 @@
 
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 
-type DatingPurpose =
-  | 'romantic'
-  | 'co_rent'
-  | 'rent_tenant'
-  | 'rent_landlord'
-  | 'market_seller'
-  | 'market_buyer'
-  | 'job_employer'
-  | 'job_seeker'
-  | 'job_buddy';
+import {
+  DATING_PURPOSE_ENTRIES,
+  DATING_PURPOSES,
+  DatingPurpose,
+} from '../../lib/datingPurposes';
 
 type DatingProfile = {
   id: string;
@@ -39,20 +34,6 @@ type MatchItem = {
   nicknameFallback: string;
 };
 
-const PURPOSE_LABELS: Record<DatingPurpose, string> = {
-  romantic: 'Романтика / общение',
-  co_rent: 'Снимать жильё вместе',
-  rent_tenant: 'Ищу жильё как арендатор',
-  rent_landlord: 'Сдаю жильё',
-  market_seller: 'Продаю / оказываю услуги',
-  market_buyer: 'Покупаю / ищу услуги',
-  job_employer: 'Ищу сотрудников',
-  job_seeker: 'Ищу работу',
-  job_buddy: 'Ищу напарника',
-};
-
-const PURPOSE_OPTIONS = Object.entries(PURPOSE_LABELS) as [DatingPurpose, string][];
-
 type SavePayload = {
   nickname: string;
   looking_for: string;
@@ -70,7 +51,7 @@ function PurposeBadges({ purposes }: { purposes: DatingPurpose[] }) {
     <div className="badges">
       {purposes.map((purpose) => (
         <span key={purpose} className="badge">
-          {PURPOSE_LABELS[purpose]}
+          {DATING_PURPOSES[purpose].label}
         </span>
       ))}
     </div>
@@ -154,6 +135,7 @@ function ProfileForm({
     photo_urls: initialProfile?.photo_urls ?? [],
   }));
   const [error, setError] = useState<string | null>(null);
+  const [purposesError, setPurposesError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -168,6 +150,7 @@ function ProfileForm({
       link_jobs: initialProfile?.link_jobs ?? false,
       photo_urls: initialProfile?.photo_urls ?? [],
     });
+    setPurposesError(false);
   }, [initialProfile]);
 
   const handleCheckbox = (purpose: DatingPurpose) => {
@@ -177,6 +160,7 @@ function ProfileForm({
         : [...prev.purposes, purpose];
       return { ...prev, purposes: nextPurposes };
     });
+    setPurposesError(false);
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -189,6 +173,7 @@ function ProfileForm({
     }
 
     if (!form.purposes.length) {
+      setPurposesError(true);
       setError('Выберите хотя бы одну цель.');
       return;
     }
@@ -203,6 +188,12 @@ function ProfileForm({
 
       const data = await response.json();
       if (!data?.ok) {
+        if (data?.error === 'PURPOSES_REQUIRED') {
+          setPurposesError(true);
+          setError('Выберите хотя бы одну цель.');
+          return;
+        }
+
         setError('Не удалось сохранить анкету. Проверьте поля и попробуйте снова.');
         return;
       }
@@ -264,20 +255,24 @@ function ProfileForm({
         </label>
       </div>
 
-      <div className="card-section">
+      <div className={`card-section purposes ${purposesError ? 'card-section-error' : ''}`}>
         <div className="label">Цели знакомств</div>
-        <div className="checkbox-grid">
-          {PURPOSE_OPTIONS.map(([value, label]) => (
-            <label key={value} className="checkbox-item">
+        <div className="purpose-grid">
+          {DATING_PURPOSE_ENTRIES.map(([value, meta]) => (
+            <label key={value} className="purpose-item">
               <input
                 type="checkbox"
                 checked={form.purposes.includes(value)}
                 onChange={() => handleCheckbox(value)}
               />
-              <span>{label}</span>
+              <div>
+                <div className="purpose-title">{meta.label}</div>
+                <div className="purpose-description">{meta.description}</div>
+              </div>
             </label>
           ))}
         </div>
+        {purposesError ? <div className="hint error">Выберите хотя бы одну цель.</div> : null}
       </div>
 
       <div className="toggle-grid">

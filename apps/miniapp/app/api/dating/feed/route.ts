@@ -1,22 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
+import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
 
 export const dynamic = 'force-dynamic';
-
-const PURPOSES = [
-  'romantic',
-  'co_rent',
-  'rent_tenant',
-  'rent_landlord',
-  'market_seller',
-  'market_buyer',
-  'job_employer',
-  'job_seeker',
-  'job_buddy',
-] as const;
-
-type Purpose = (typeof PURPOSES)[number];
 
 export async function GET(req: Request) {
   try {
@@ -33,7 +20,7 @@ export async function GET(req: Request) {
     const purposesFilter = url.searchParams
       .getAll('purposes')
       .map((p) => p.trim())
-      .filter((p): p is Purpose => PURPOSES.includes(p as Purpose));
+      .filter((p): p is DatingPurpose => isDatingPurpose(p));
 
     const { data: swipes, error: swipeError } = await supabase
       .from('dating_swipes')

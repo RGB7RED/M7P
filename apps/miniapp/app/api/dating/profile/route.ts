@@ -1,29 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
+import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
 
 export const dynamic = 'force-dynamic';
-
-const PURPOSES = [
-  'romantic',
-  'co_rent',
-  'rent_tenant',
-  'rent_landlord',
-  'market_seller',
-  'market_buyer',
-  'job_employer',
-  'job_seeker',
-  'job_buddy',
-] as const;
-
-type Purpose = (typeof PURPOSES)[number];
 
 type IncomingProfile = {
   nickname?: string;
   looking_for?: string;
   offering?: string;
   comment?: string | null;
-  purposes?: Purpose[];
+  purposes?: DatingPurpose[];
   link_market?: boolean;
   link_housing?: boolean;
   link_jobs?: boolean;
@@ -65,14 +52,14 @@ function validateProfileBody(body: IncomingProfile) {
   const comment = body.comment ? String(body.comment).trim() : null;
 
   const purposesRaw = Array.isArray(body.purposes) ? body.purposes : [];
-  const purposes = purposesRaw.filter((p): p is Purpose => PURPOSES.includes(p as Purpose));
+  const purposes = purposesRaw.filter((p): p is DatingPurpose => isDatingPurpose(p));
 
   if (!nickname || !looking_for || !offering) {
     return { ok: false as const, error: 'REQUIRED_FIELDS' };
   }
 
   if (!purposes.length) {
-    return { ok: false as const, error: 'PURPOSE_REQUIRED' };
+    return { ok: false as const, error: 'PURPOSES_REQUIRED' };
   }
 
   const photoUrls = Array.isArray(body.photo_urls)
