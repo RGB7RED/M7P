@@ -144,6 +144,23 @@
    - ищет по фильтрам;
    - получает уведомления от бота (матчи, отклики, модерация, платежи).
 
+## Схема данных: знакомства (Supabase/Postgres)
+- SQL-скрипт: `docs/db/004_dating_schema.sql`.
+- Основные объекты:
+  - `dating_profiles` — анкета пользователя с целями знакомств (`purposes`), текстовыми полями («что ищу», «что предлагаю», комментарий), ссылками на другие разделы (market/housing/jobs), массивом фото `photo_urls` и признаком `has_photo`.
+  - `dating_swipes` — решения пользователя по чужим анкетам (`decision: like|dislike`), уникальность по паре `(from_user_id, to_profile_id)`.
+  - `dating_matches` — взаимные лайки. Пара пользователей хранится в отсортированном виде, уникальность обеспечивается индексом `uniq_dating_matches_pair`.
+  - Enum `dating_purpose` фиксирует цели: romantic, co_rent, rent_tenant, rent_landlord, market_seller, market_buyer, job_employer, job_seeker, job_buddy.
+- Триггер `set_updated_at` переиспользуется для `dating_profiles.updated_at`. RLS пока не включён.
+
+## API Mini App: знакомства
+Реализованы в `apps/miniapp/app/api/dating/*` (работают при наличии сессионной куки `m7_session`).
+- `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null`.
+- `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offering`, минимум один `purposes`.
+- `GET /api/dating/feed` — лента активных анкет без уже просмотренных/свайпнутых. Параметры: `limit` (<=50), `purposes` (фильтр по пересечению целей).
+- `POST /api/dating/swipe` — лайк/дизлайк анкеты. При обоюдном лайке создаётся запись в `dating_matches`.
+- `GET /api/dating/matches` — список матчей текущего пользователя с данными другого профиля и ссылкой на Telegram.
+
 ## Роли компонентов
 - **Mini App**: UI/UX внутри Telegram WebApp; сбор данных пользователя, показ лент и карточек, вызовы backend API.
 - **Бот**: отправка кодов авторизации, уведомления, быстрые действия для возврата в Mini App или связи с пользователем.
@@ -217,4 +234,16 @@
   - Реализован webhook `/api/telegram/webhook`, сохраняющий `chat_id` из сообщений боту и связывающий его с `telegram_username`.
   - Отправка одноразовых кодов теперь идёт в личный чат по `telegram_chat_id`; если чат не привязан или отправка невозможна, код показывается в UI (delivery: `mock`).
   - Обновлена документация и тексты в UI, подсказывающие пользователю написать боту /start перед получением кода.
+
+### MVP раздела «Знакомства»: схема, API, базовый UI (дата: 2025-12-09)
+- Затронутые файлы и папки:
+  - `docs/db/004_dating_schema.sql`
+  - `apps/miniapp/app/api/dating/*`
+  - `apps/miniapp/app/dating/page.tsx`
+  - `apps/miniapp/app/globals.css`
+  - `README.md`
+- Краткое описание:
+  - Добавлены таблицы `dating_profiles`, `dating_swipes`, `dating_matches` и enum `dating_purpose` для целей знакомств; настроены индексы и триггер обновления `updated_at`.
+  - Реализованы сервисные маршруты `/api/dating/profile`, `/api/dating/feed`, `/api/dating/swipe`, `/api/dating/matches` с использованием `currentUser` и сервисного клиента Supabase.
+  - Раздел «Знакомства» в Mini App переведён в рабочий режим: онбординг и редактирование анкеты, лента свайпов с записью решений и алертом о мэтче, блок «Мои мэтчи» с переходом в Telegram, компактный каталог последних анкет.
 
