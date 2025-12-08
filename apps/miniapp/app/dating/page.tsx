@@ -16,7 +16,7 @@ type DatingProfile = {
   user_id: string;
   nickname: string;
   looking_for: string;
-  offering: string;
+  offer: string;
   comment?: string | null;
   purposes: DatingPurpose[];
   photo_urls: string[];
@@ -24,6 +24,10 @@ type DatingProfile = {
   link_market: boolean;
   link_housing: boolean;
   link_jobs: boolean;
+  show_listings: boolean;
+  is_active: boolean;
+  last_activated_at: string | null;
+  is_stale?: boolean;
   is_verified: boolean;
   status: string;
   created_at: string;
@@ -42,13 +46,15 @@ type DatingProfileWithListings = DatingProfile & { listings?: ListingPreviewGrou
 type SavePayload = {
   nickname: string;
   looking_for: string;
-  offering: string;
+  offer: string;
   comment?: string | null;
   purposes: DatingPurpose[];
   link_market: boolean;
   link_housing: boolean;
   link_jobs: boolean;
   photo_urls: string[];
+  show_listings: boolean;
+  is_active: boolean;
 };
 
 const EMPTY_LISTINGS: ListingPreviewGroups = { market: [], housing: [], jobs: [] };
@@ -98,7 +104,7 @@ function ProfileCard({
 
       <div className="profile-section">
         <div className="label">Предлагаю</div>
-        <p>{profile.offering}</p>
+        <p>{profile.offer}</p>
       </div>
 
       {profile.comment ? (
@@ -133,13 +139,15 @@ function ProfileForm({
   const [form, setForm] = useState<SavePayload>(() => ({
     nickname: initialProfile?.nickname ?? '',
     looking_for: initialProfile?.looking_for ?? '',
-    offering: initialProfile?.offering ?? '',
+    offer: initialProfile?.offer ?? '',
     comment: initialProfile?.comment ?? '',
     purposes: initialProfile?.purposes ?? [],
     link_market: initialProfile?.link_market ?? false,
     link_housing: initialProfile?.link_housing ?? false,
     link_jobs: initialProfile?.link_jobs ?? false,
     photo_urls: initialProfile?.photo_urls ?? [],
+    show_listings: initialProfile?.show_listings ?? true,
+    is_active: initialProfile?.is_active ?? true,
   }));
   const [error, setError] = useState<string | null>(null);
   const [purposesError, setPurposesError] = useState(false);
@@ -149,13 +157,15 @@ function ProfileForm({
     setForm({
       nickname: initialProfile?.nickname ?? '',
       looking_for: initialProfile?.looking_for ?? '',
-      offering: initialProfile?.offering ?? '',
+      offer: initialProfile?.offer ?? '',
       comment: initialProfile?.comment ?? '',
       purposes: initialProfile?.purposes ?? [],
       link_market: initialProfile?.link_market ?? false,
       link_housing: initialProfile?.link_housing ?? false,
       link_jobs: initialProfile?.link_jobs ?? false,
       photo_urls: initialProfile?.photo_urls ?? [],
+      show_listings: initialProfile?.show_listings ?? true,
+      is_active: initialProfile?.is_active ?? true,
     });
     setPurposesError(false);
   }, [initialProfile]);
@@ -174,7 +184,7 @@ function ProfileForm({
     event.preventDefault();
     setError(null);
 
-    if (!form.nickname.trim() || !form.looking_for.trim() || !form.offering.trim()) {
+    if (!form.nickname.trim() || !form.looking_for.trim() || !form.offer.trim()) {
       setError('Заполните никнейм, что ищете и что предлагаете.');
       return;
     }
@@ -243,8 +253,8 @@ function ProfileForm({
           Что предлагаю?
           <textarea
             className="input textarea"
-            value={form.offering}
-            onChange={(e) => setForm((prev) => ({ ...prev, offering: e.target.value }))}
+            value={form.offer}
+            onChange={(e) => setForm((prev) => ({ ...prev, offer: e.target.value }))}
             required
             rows={3}
           />
@@ -309,6 +319,25 @@ function ProfileForm({
         </label>
       </div>
 
+      <div className="toggle-grid">
+        <label className="checkbox-item">
+          <input
+            type="checkbox"
+            checked={form.show_listings}
+            onChange={(e) => setForm((prev) => ({ ...prev, show_listings: e.target.checked }))}
+          />
+          <span>Показывать мои объявления в анкете</span>
+        </label>
+        <label className="checkbox-item">
+          <input
+            type="checkbox"
+            checked={form.is_active}
+            onChange={(e) => setForm((prev) => ({ ...prev, is_active: e.target.checked }))}
+          />
+          <span>Показывать анкету в поиске (можно отключить в любой момент)</span>
+        </label>
+      </div>
+
       <label className="input-label">
         Фото (URL через запятую)
         <input
@@ -326,6 +355,7 @@ function ProfileForm({
           placeholder="https://..."
         />
       </label>
+      <div className="hint muted">Отсутствие фото снижает видимость анкеты.</div>
 
       {error ? <div className="hint error">{error}</div> : null}
 
@@ -357,6 +387,7 @@ export default function DatingPage() {
   const [matches, setMatches] = useState<MatchItem[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [showMatches, setShowMatches] = useState(false);
+  const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
 
   const currentCard = feed[feedIndex] ?? null;
 
@@ -442,10 +473,21 @@ export default function DatingPage() {
   const hasListings = (listings: ListingPreviewGroups) =>
     listings.market.length + listings.housing.length + listings.jobs.length > 0;
 
-  const hasMyListings = useMemo(() => hasListings(profileListings), [profileListings]);
+  const hasMyListings = useMemo(
+    () => (profile?.show_listings ? hasListings(profileListings) : false),
+    [profile, profileListings],
+  );
+
+  const isProfileStale = useMemo(() => {
+    if (!profile) return false;
+    if (typeof profile.is_stale === 'boolean') return profile.is_stale;
+    if (!profile.last_activated_at) return true;
+    const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    return !profile.is_active || new Date(profile.last_activated_at).getTime() < ninetyDaysAgo;
+  }, [profile]);
 
   const otherListingsPreview = useMemo(() => {
-    if (!currentCard?.listings) return [] as ListingPreview[];
+    if (!currentCard?.listings || !currentCard.show_listings) return [] as ListingPreview[];
     return [...currentCard.listings.market, ...currentCard.listings.housing, ...currentCard.listings.jobs].slice(0, 3);
   }, [currentCard]);
 
@@ -482,6 +524,43 @@ export default function DatingPage() {
     }
   };
 
+  const handleRefreshProfile = async () => {
+    if (!profile) return;
+    setIsRefreshingProfile(true);
+
+    const payload: SavePayload = {
+      nickname: profile.nickname,
+      looking_for: profile.looking_for,
+      offer: profile.offer,
+      comment: profile.comment ?? '',
+      purposes: profile.purposes,
+      link_market: profile.link_market,
+      link_housing: profile.link_housing,
+      link_jobs: profile.link_jobs,
+      photo_urls: profile.photo_urls ?? [],
+      show_listings: profile.show_listings,
+      is_active: true,
+    };
+
+    try {
+      const response = await fetch('/api/dating/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (data?.ok) {
+        setProfile(data.profile);
+        fetchFeed();
+        fetchCatalog();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsRefreshingProfile(false);
+    }
+  };
+
   const matchesList = useMemo(() => matches, [matches]);
 
   return (
@@ -494,6 +573,20 @@ export default function DatingPage() {
       </div>
 
       {matchNotice ? <div className="hint success">{matchNotice}</div> : null}
+
+      {profile && !isEditing && isProfileStale ? (
+        <div className="hint warning">
+          Анкета неактуальна: её не обновляли более 90 дней или она выключена. Обновите данные, чтобы снова показываться в поиске.
+          <div className="actions-row" style={{ marginTop: '8px' }}>
+            <button className="primary-btn" type="button" onClick={handleRefreshProfile} disabled={isRefreshingProfile}>
+              {isRefreshingProfile ? 'Обновляем...' : 'Обновить анкету'}
+            </button>
+            <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
+              Изменить данные
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {isLoadingProfile ? (
         <div className="card">Загружаем вашу анкету...</div>
@@ -516,7 +609,9 @@ export default function DatingPage() {
             </div>
             <p className="muted">Активные объявления из Маркета, Жилья и Работы, привязанные к этому аккаунту.</p>
 
-            {!hasMyListings ? (
+            {!profile.show_listings ? (
+              <div className="hint warning">Вы скрыли объявления в анкете. Включите переключатель в форме, если хотите показывать их другим пользователям.</div>
+            ) : !hasMyListings ? (
               <>
                 <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
                 <div className="actions-row">
@@ -609,25 +704,32 @@ export default function DatingPage() {
                   </div>
                 </ProfileCard>
 
-                <div className="profile-section">
-                  <div className="label">Объявления пользователя</div>
-                  <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
-                  {otherListingsPreview.length ? (
-                    <div className="catalog-grid">
-                      {otherListingsPreview.map((listing) => (
-                        <ListingPreviewCard
-                          key={`${listing.section}-${listing.id}`}
-                          listing={listing}
-                          onClick={() =>
-                            openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
-                          }
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="muted">Объявления пользователя пока не найдены.</p>
-                  )}
-                </div>
+                {currentCard.show_listings ? (
+                  <div className="profile-section">
+                    <div className="label">Объявления пользователя</div>
+                    <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
+                    {otherListingsPreview.length ? (
+                      <div className="catalog-grid">
+                        {otherListingsPreview.map((listing) => (
+                          <ListingPreviewCard
+                            key={`${listing.section}-${listing.id}`}
+                            listing={listing}
+                            onClick={() =>
+                              openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
+                            }
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted">Объявления пользователя пока не найдены.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="profile-section">
+                    <div className="label">Объявления пользователя</div>
+                    <p className="muted">Пользователь скрывает свои объявления.</p>
+                  </div>
+                )}
               </>
             ) : null}
           </div>
