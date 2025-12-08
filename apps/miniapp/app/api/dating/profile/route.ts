@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
-import { getActiveListingsForUser } from '../_helpers/listings';
+import { getProfileListings } from '../_helpers/listings';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +39,16 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const listings = await getActiveListingsForUser(currentUser.userId, supabase);
+    const listingsLookup = profile
+      ? await getProfileListings({
+          userId: currentUser.userId,
+          profileId: profile.id,
+          client: supabase,
+          selectedOnly: true,
+          includeListings: profile.show_listings,
+          limitPerType: 0,
+        })
+      : null;
 
     const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
     const isStale = profile
@@ -50,8 +59,14 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      profile: profile ? { ...profile, is_stale: isStale } : null,
-      listings,
+      profile: profile
+        ? {
+            ...profile,
+            is_stale: isStale,
+            has_active_listings: listingsLookup?.hasActiveListings ?? false,
+            listings: profile.show_listings ? listingsLookup?.listings : undefined,
+          }
+        : null,
     });
   } catch (error) {
     console.error('[dating/profile][GET] unexpected error', error);
@@ -135,7 +150,23 @@ export async function PUT(req: Request) {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, profile });
+    const listingsLookup = await getProfileListings({
+      userId: currentUser.userId,
+      profileId: profile.id,
+      client: supabase,
+      selectedOnly: true,
+      includeListings: profile.show_listings,
+      limitPerType: 0,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      profile: {
+        ...profile,
+        has_active_listings: listingsLookup.hasActiveListings,
+        listings: profile.show_listings ? listingsLookup.listings : undefined,
+      },
+    });
   } catch (error) {
     console.error('[dating/profile][PUT] unexpected error', error);
     const message =

@@ -151,6 +151,7 @@
   - `dating_swipes` — решения пользователя по чужим анкетам (`decision: like|dislike`), уникальность по паре `(from_user_id, to_profile_id)`.
   - `dating_matches` — взаимные лайки. Пара пользователей хранится в отсортированном виде, уникальность обеспечивается индексом `uniq_dating_matches_pair`.
   - Enum `dating_purpose` фиксирует цели: romantic, friends, co_rent, rent_tenant, rent_landlord, market_seller, market_buyer, job_employer, job_seeker, job_buddy.
+  - Привязка объявлений к анкете: `dating_profile_listings` из `docs/db/008_dating_profile_listings.sql` хранит явный список активных объявлений пользователя (market/housing/job), которые показываются в анкете знакомств.
 - Триггер `set_updated_at` переиспользуется для `dating_profiles.updated_at`. RLS пока не включён.
 
 ## Dating purposes (цели знакомств)
@@ -180,7 +181,9 @@
 ## API Mini App: знакомства
 Реализованы в `apps/miniapp/app/api/dating/*` (работают при наличии сессионной куки `m7_session`).
 - `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null`.
-- `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offer`, минимум один `purposes`. При включённой анкете (`is_active = true`) обновляется `last_activated_at` для 90‑дневной актуальности. Поддерживаются флаги `show_listings` и `is_active`.
+- `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offer`, минимум один `purposes`. При включённой анкете (`is_active = true`) обновляется `last_activated_at` для 90‑дневной актуальности. Поддерживаются флаги `show_listings` и `is_active`. В DTO профиля добавлены поля `has_active_listings` (есть ли активные объявления у пользователя) и `listings` (предпросмотры выбранных объявлений при `show_listings=true`).
+- `GET /api/dating/profile/listings` — отдать все активные объявления пользователя (market/housing/job) и текущие привязки к анкете для явного выбора.
+- `PUT /api/dating/profile/listings` — принять массив `{ listingType, listingId }` и атомарно перезаписать привязки в `dating_profile_listings`.
 - `GET /api/dating/feed` — лента активных анкет без уже просмотренных/свайпнутых. Параметры: `limit` (<=50), `purposes` (фильтр по пересечению целей, можно перечислять через запятую). В ленту попадают только анкеты с `is_active=true` и `last_activated_at` не старше 90 дней.
 - `POST /api/dating/swipe` — лайк/дизлайк анкеты. При обоюдном лайке создаётся запись в `dating_matches`.
 - `GET /api/dating/matches` — список матчей текущего пользователя с данными другого профиля и ссылкой на Telegram.

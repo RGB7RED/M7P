@@ -13,3 +13,8 @@ export type ListingPreviewGroups = {
   housing: ListingPreview[];
   jobs: ListingPreview[];
 };
+
+export type ListingSelection = {
+  listingType: 'market' | 'housing' | 'job';
+  listingId: string;
+};
