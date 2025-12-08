@@ -43,30 +43,39 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
+    const recentThreshold = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Возвращаем мэтчи только с анкетами, которые остаются активными и актуальными.
     const { data: profiles, error: profilesError } = await supabase
       .from('dating_profiles')
-      .select('id, user_id, nickname, purposes, has_photo')
-      .in('user_id', otherUserIds);
+      .select('id, user_id, nickname, purposes, has_photo, is_active, last_activated_at')
+      .in('user_id', otherUserIds)
+      .eq('is_active', true)
+      .gte('last_activated_at', recentThreshold);
 
     if (profilesError) {
       console.error('[dating/matches] profiles lookup error', profilesError);
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const responseItems = matches.map((match) => {
-      const otherUserId = match.user1_id === currentUser.userId ? match.user2_id : match.user1_id;
-      const user = users?.find((u) => u.id === otherUserId);
-      const profile = profiles?.find((p) => p.user_id === otherUserId);
+    const activeProfileIds = new Set((profiles ?? []).map((p) => p.user_id));
 
-      return {
-        matchId: match.id,
-        userId: otherUserId,
-        telegramUsername: user?.telegram_username ?? '',
-        profile: profile || null,
-        nicknameFallback: user?.m7_nickname ?? '',
-        lastActivityAt: match.last_activity_at,
-      };
-    });
+    const responseItems = matches
+      .map((match) => {
+        const otherUserId = match.user1_id === currentUser.userId ? match.user2_id : match.user1_id;
+        const user = users?.find((u) => u.id === otherUserId);
+        const profile = profiles?.find((p) => p.user_id === otherUserId);
+
+        return {
+          matchId: match.id,
+          userId: otherUserId,
+          telegramUsername: user?.telegram_username ?? '',
+          profile: profile || null,
+          nicknameFallback: user?.m7_nickname ?? '',
+          lastActivityAt: match.last_activity_at,
+        };
+      })
+      .filter((item) => activeProfileIds.has(item.userId));
 
     return NextResponse.json({ ok: true, items: responseItems });
   } catch (error) {

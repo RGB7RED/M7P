@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
     const purposesFilter = url.searchParams
       .getAll('purposes')
-      .map((p) => p.trim())
+      .flatMap((p) => p.split(',').map((value) => value.trim()))
       .filter((p): p is DatingPurpose => isDatingPurpose(p));
 
     const { data: swipes, error: swipeError } = await supabase
@@ -36,10 +36,17 @@ export async function GET(req: Request) {
 
     const excludedProfileIds = (swipes ?? []).map((item) => item.to_profile_id).filter(Boolean);
 
+    // Актуальны только анкеты, которые активны и обновлялись/включались за последние 90 дней.
+    const recentThreshold = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
     let query = supabase
       .from('dating_profiles')
-      .select('id, user_id, nickname, looking_for, offering, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, is_verified, status, created_at')
+      .select(
+        'id, user_id, nickname, looking_for, offer, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, show_listings, is_active, last_activated_at, is_verified, status, created_at',
+      )
       .eq('status', 'active')
+      .eq('is_active', true)
+      .gte('last_activated_at', recentThreshold)
       .neq('user_id', currentUser.userId)
       .order('has_photo', { ascending: false })
       .order('created_at', { ascending: false })
@@ -67,7 +74,9 @@ export async function GET(req: Request) {
     await Promise.all(
       (profiles ?? []).map(async (profile) => {
         try {
-          const listings = await getActiveListingsForUser(profile.user_id, supabase);
+          const listings = profile.show_listings
+            ? await getActiveListingsForUser(profile.user_id, supabase)
+            : { market: [], housing: [], jobs: [] };
           listingsByUserId.set(profile.user_id, listings);
         } catch (lookupError) {
           console.error('[dating/feed] listings lookup error', lookupError);
