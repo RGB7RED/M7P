@@ -60,9 +60,19 @@ const emptyForm: SavePayload = {
   status: 'active',
 };
 
-function ListingCard({ listing, onEdit }: { listing: HousingListing; onEdit?: (item: HousingListing) => void }) {
+function ListingCard({
+  listing,
+  onEdit,
+  anchorId,
+  highlighted,
+}: {
+  listing: HousingListing;
+  onEdit?: (item: HousingListing) => void;
+  anchorId?: string;
+  highlighted?: boolean;
+}) {
   return (
-    <div className="profile-card profile-card-compact">
+    <div id={anchorId} className={`profile-card profile-card-compact ${highlighted ? 'listing-highlight' : ''}`.trim()}>
       <div className="card-header">
         <div>
           <div className="profile-title">{listing.title}</div>
@@ -100,7 +110,9 @@ function ListingCard({ listing, onEdit }: { listing: HousingListing; onEdit?: (i
 
 export default function HousingPage() {
   const searchParams = useSearchParams();
-  const defaultTab = searchParams.get('mine') ? 'mine' : 'feed';
+  const highlightedListingId = searchParams.get('listing');
+  const hasAuthorParam = searchParams.get('author');
+  const defaultTab = searchParams.get('mine') || (highlightedListingId && !hasAuthorParam) ? 'mine' : 'feed';
   const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>(defaultTab);
   const [form, setForm] = useState<SavePayload>(emptyForm);
   const [feedFilter, setFeedFilter] = useState<FilterState>({ city: '', maxPrice: '', offer_type: '', property_type: '' });
@@ -111,6 +123,7 @@ export default function HousingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [highlightedMineId] = useState<string | null>(highlightedListingId);
 
   const loadFeed = async () => {
     setLoadingFeed(true);
@@ -161,6 +174,15 @@ export default function HousingPage() {
       loadMine();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (highlightedMineId && activeTab === 'mine') {
+      const element = document.getElementById(`listing-${highlightedMineId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightedMineId, activeTab, mine]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -505,7 +527,13 @@ export default function HousingPage() {
 
           <div className="grid">
             {mine.map((item) => (
-              <ListingCard key={item.id} listing={item} onEdit={handleEdit} />
+              <ListingCard
+                key={item.id}
+                listing={item}
+                onEdit={handleEdit}
+                anchorId={`listing-${item.id}`}
+                highlighted={highlightedMineId === item.id}
+              />
             ))}
           </div>
         </div>

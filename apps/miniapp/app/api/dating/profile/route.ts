@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
-import { getActiveListingsForUser } from '../_helpers/listings';
+import { getActiveListingsForUser, getHasActiveListings, getSelectionsForProfiles } from '../_helpers/listings';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +39,21 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const listings = await getActiveListingsForUser(currentUser.userId, supabase);
+    const selections = profile ? await getSelectionsForProfiles(supabase, [profile.id]) : new Map();
+    const selection = profile ? selections.get(profile.id) : null;
+
+    let listings = { market: [], housing: [], jobs: [] };
+    let hasActiveListings = false;
+
+    if (profile) {
+      if (profile.show_listings) {
+        const result = await getActiveListingsForUser(currentUser.userId, supabase, { selection });
+        listings = result.listings;
+        hasActiveListings = result.hasActiveListings;
+      } else {
+        hasActiveListings = await getHasActiveListings(currentUser.userId, supabase);
+      }
+    }
 
     const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
     const isStale = profile
@@ -50,8 +64,7 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      profile: profile ? { ...profile, is_stale: isStale } : null,
-      listings,
+      profile: profile ? { ...profile, is_stale: isStale, listings: profile.show_listings ? listings : undefined, has_active_listings: hasActiveListings } : null,
     });
   } catch (error) {
     console.error('[dating/profile][GET] unexpected error', error);

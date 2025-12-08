@@ -171,6 +171,7 @@
 
 ## Схема данных: Маркет / Жильё / Работа
 - SQL-скрипт: `docs/db/006_market_housing_jobs.sql` — его нужно выполнить в Supabase при разворачивании БД (создаёт таблицы, индексы и триггеры `set_updated_at`).
+- SQL-скрипт: `docs/db/008_dating_profile_listings.sql` — связывает анкеты знакомств с выбранными объявлениями пользователя через таблицу `dating_profile_listings`.
 - Таблицы объявлений:
   - `market_listings` — товары и услуги (title, description, category, type, price/currency, city, is_online, status, ссылки на автора).
   - `housing_listings` — объявления по аренде (offer_type, property_type, city/district, price_per_month, доступность, статус и др.).
@@ -181,9 +182,12 @@
 Реализованы в `apps/miniapp/app/api/dating/*` (работают при наличии сессионной куки `m7_session`).
 - `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null`.
 - `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offer`, минимум один `purposes`. При включённой анкете (`is_active = true`) обновляется `last_activated_at` для 90‑дневной актуальности. Поддерживаются флаги `show_listings` и `is_active`.
+- `GET /api/dating/profile/listings` — вернуть активные объявления пользователя по разделам и список тех, что выбраны для анкеты.
+- `PUT /api/dating/profile/listings` — атомарно заменить выбранные объявления в анкете (только активные объявления текущего пользователя из Маркета/Жилья/Работы).
 - `GET /api/dating/feed` — лента активных анкет без уже просмотренных/свайпнутых. Параметры: `limit` (<=50), `purposes` (фильтр по пересечению целей, можно перечислять через запятую). В ленту попадают только анкеты с `is_active=true` и `last_activated_at` не старше 90 дней.
 - `POST /api/dating/swipe` — лайк/дизлайк анкеты. При обоюдном лайке создаётся запись в `dating_matches`.
 - `GET /api/dating/matches` — список матчей текущего пользователя с данными другого профиля и ссылкой на Telegram.
+- В DTO анкеты возвращаются флаги `show_listings` и `has_active_listings`; если показы объявлений включены, отдаётся массив превью выбранных объявлений, иначе только индикатор наличия активных объявлений.
 
 ## Роли компонентов
 - **Mini App**: UI/UX внутри Telegram WebApp; сбор данных пользователя, показ лент и карточек, вызовы backend API.
@@ -307,4 +311,20 @@
   - Реализованы CRUD API для объявлений Маркета, Жилья и Работы с фильтрами по статусу, городу и специальным параметрам; добавлен параметр `mine=true` для выборки своих записей и валидация статусов draft/active/archived.
   - В Mini App добавлены рабочие вкладки «Маркет», «Жильё» и «Работа»: лента активных объявлений с фильтрами, блок «Мои объявления» с кнопкой редактирования, простые формы создания/обновления объявлений.
   - Напоминание: перед использованием разделов необходимо применить SQL `docs/db/006_market_housing_jobs.sql` в Supabase, чтобы таблицы объявлений существовали.
+
+### Управление объявлениями в анкете знакомств (дата: 2025-12-11)
+- Затронутые файлы и папки:
+  - `docs/db/008_dating_profile_listings.sql`
+  - `apps/miniapp/app/api/dating/_helpers/listings.ts`
+  - `apps/miniapp/app/api/dating/profile/route.ts`
+  - `apps/miniapp/app/api/dating/profile/listings/route.ts`
+  - `apps/miniapp/app/api/dating/feed/route.ts`
+  - `apps/miniapp/app/dating/page.tsx`
+  - `apps/miniapp/app/market/page.tsx`, `apps/miniapp/app/housing/page.tsx`, `apps/miniapp/app/jobs/page.tsx`
+  - `apps/miniapp/app/globals.css`
+  - `README.md`
+- Краткое описание:
+  - Добавлена таблица `dating_profile_listings` и миграция `008_dating_profile_listings.sql` для явной привязки объявлений Маркета/Жилья/Работы к анкете знакомств.
+  - Появился API `/api/dating/profile/listings` для получения всех активных объявлений пользователя и сохранения выбранных; профиль и лента возвращают `has_active_listings` и показывают только выбранные объявления при включённом `show_listings`.
+  - В UI анкеты добавлен раздел выбора объявлений с чекбоксами и сохранением выбора; карточки чужих анкет показывают заглушку, если пользователь скрывает объявления. Переходы из анкеты в разделы Маркет/Жильё/Работа подсвечивают и проматывают нужное объявление по query-параметру `listing`.
 
