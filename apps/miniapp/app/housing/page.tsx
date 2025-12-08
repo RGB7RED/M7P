@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -98,7 +99,9 @@ function ListingCard({ listing, onEdit }: { listing: HousingListing; onEdit?: (i
 }
 
 export default function HousingPage() {
-  const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>('feed');
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('mine') ? 'mine' : 'feed';
+  const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>(defaultTab);
   const [form, setForm] = useState<SavePayload>(emptyForm);
   const [feedFilter, setFeedFilter] = useState<FilterState>({ city: '', maxPrice: '', offer_type: '', property_type: '' });
   const [feed, setFeed] = useState<HousingListing[]>([]);

@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -89,7 +90,9 @@ function ListingCard({ listing, onEdit }: { listing: JobListing; onEdit?: (item:
 }
 
 export default function JobsPage() {
-  const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>('feed');
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('mine') ? 'mine' : 'feed';
+  const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>(defaultTab);
   const [form, setForm] = useState<SavePayload>(emptyForm);
   const [feedFilter, setFeedFilter] = useState<FilterState>({ city: '', role_type: '', employment_format: '' });
   const [feed, setFeed] = useState<JobListing[]>([]);

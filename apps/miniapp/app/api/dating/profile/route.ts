@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
+import { getActiveListingsForUser } from '../_helpers/listings';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +37,9 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, profile: profile ?? null });
+    const listings = await getActiveListingsForUser(currentUser.userId, supabase);
+
+    return NextResponse.json({ ok: true, profile: profile ?? null, listings });
   } catch (error) {
     console.error('[dating/profile][GET] unexpected error', error);
     const message =

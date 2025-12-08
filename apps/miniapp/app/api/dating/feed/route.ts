@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
+import { getActiveListingsForUser } from '../_helpers/listings';
+import { ListingPreviewGroups } from '../../../dating/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +61,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, items: profiles ?? [] });
+    const listingsByUserId = new Map<string, ListingPreviewGroups>();
+    const baseListings: ListingPreviewGroups = { market: [], housing: [], jobs: [] };
+
+    await Promise.all(
+      (profiles ?? []).map(async (profile) => {
+        try {
+          const listings = await getActiveListingsForUser(profile.user_id, supabase);
+          listingsByUserId.set(profile.user_id, listings);
+        } catch (lookupError) {
+          console.error('[dating/feed] listings lookup error', lookupError);
+        }
+      }),
+    );
+
+    const responseItems = (profiles ?? []).map((profile) => ({
+      ...profile,
+      listings: listingsByUserId.get(profile.user_id) ?? { ...baseListings },
+    }));
+
+    return NextResponse.json({ ok: true, items: responseItems });
   } catch (error) {
     console.error('[dating/feed] unexpected error', error);
     const message =
