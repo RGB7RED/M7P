@@ -1,12 +1,15 @@
 'use client';
 
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import {
   DATING_PURPOSE_ENTRIES,
   DATING_PURPOSES,
   DatingPurpose,
 } from '../../lib/datingPurposes';
+import { ListingPreview, ListingPreviewGroups } from './types';
+import { ListingPreviewCard } from './components/ListingPreviewCard';
 
 type DatingProfile = {
   id: string;
@@ -34,6 +37,8 @@ type MatchItem = {
   nicknameFallback: string;
 };
 
+type DatingProfileWithListings = DatingProfile & { listings?: ListingPreviewGroups };
+
 type SavePayload = {
   nickname: string;
   looking_for: string;
@@ -45,6 +50,8 @@ type SavePayload = {
   link_jobs: boolean;
   photo_urls: string[];
 };
+
+const EMPTY_LISTINGS: ListingPreviewGroups = { market: [], housing: [], jobs: [] };
 
 function PurposeBadges({ purposes }: { purposes: DatingPurpose[] }) {
   return (
@@ -337,11 +344,13 @@ function ProfileForm({
 }
 
 export default function DatingPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<DatingProfile | null>(null);
+  const [profileListings, setProfileListings] = useState<ListingPreviewGroups>(EMPTY_LISTINGS);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [feed, setFeed] = useState<DatingProfile[]>([]);
-  const [catalog, setCatalog] = useState<DatingProfile[]>([]);
+  const [feed, setFeed] = useState<DatingProfileWithListings[]>([]);
+  const [catalog, setCatalog] = useState<DatingProfileWithListings[]>([]);
   const [feedIndex, setFeedIndex] = useState(0);
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [matchNotice, setMatchNotice] = useState<string | null>(null);
@@ -358,6 +367,7 @@ export default function DatingPage() {
       const data = await response.json();
       if (data?.ok) {
         setProfile(data.profile);
+        setProfileListings(data.listings ?? EMPTY_LISTINGS);
       }
     } catch (error) {
       console.error(error);
@@ -372,7 +382,7 @@ export default function DatingPage() {
       const response = await fetch('/api/dating/feed');
       const data = await response.json();
       if (data?.ok) {
-        setFeed(data.items ?? []);
+        setFeed((data.items as DatingProfileWithListings[]) ?? []);
         setFeedIndex(0);
       }
     } catch (error) {
@@ -387,7 +397,7 @@ export default function DatingPage() {
       const response = await fetch('/api/dating/feed?limit=5');
       const data = await response.json();
       if (data?.ok) {
-        setCatalog(data.items ?? []);
+        setCatalog((data.items as DatingProfileWithListings[]) ?? []);
       }
     } catch (error) {
       console.error(error);
@@ -414,6 +424,30 @@ export default function DatingPage() {
     fetchFeed();
     fetchCatalog();
   }, []);
+
+  const openSection = (
+    section: ListingPreview['section'],
+    options?: { mine?: boolean; listingId?: string; authorId?: string },
+  ) => {
+    const params = new URLSearchParams();
+    if (options?.mine) params.set('mine', '1');
+    if (options?.listingId) params.set('listing', options.listingId);
+    if (options?.authorId) params.set('author', options.authorId);
+
+    const query = params.toString();
+    const path = `/${section}`;
+    router.push(query ? `${path}?${query}` : path);
+  };
+
+  const hasListings = (listings: ListingPreviewGroups) =>
+    listings.market.length + listings.housing.length + listings.jobs.length > 0;
+
+  const hasMyListings = useMemo(() => hasListings(profileListings), [profileListings]);
+
+  const otherListingsPreview = useMemo(() => {
+    if (!currentCard?.listings) return [] as ListingPreview[];
+    return [...currentCard.listings.market, ...currentCard.listings.housing, ...currentCard.listings.jobs].slice(0, 3);
+  }, [currentCard]);
 
   const handleSavedProfile = (newProfile: DatingProfile) => {
     setProfile(newProfile);
@@ -466,14 +500,87 @@ export default function DatingPage() {
       ) : !profile || isEditing ? (
         <ProfileForm initialProfile={profile} onSaved={handleSavedProfile} onCancel={() => setIsEditing(false)} />
       ) : (
-        <div className="card">
-          <h2>Моя анкета</h2>
-          <ProfileCard profile={profile} isMine>
-            <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
-              Редактировать
-            </button>
-          </ProfileCard>
-        </div>
+        <>
+          <div className="card">
+            <h2>Моя анкета</h2>
+            <ProfileCard profile={profile} isMine>
+              <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
+                Редактировать
+              </button>
+            </ProfileCard>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Мои объявления</h3>
+            </div>
+            <p className="muted">Активные объявления из Маркета, Жилья и Работы, привязанные к этому аккаунту.</p>
+
+            {!hasMyListings ? (
+              <>
+                <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
+                <div className="actions-row">
+                  <button className="ghost-btn" type="button" onClick={() => openSection('market', { mine: true })}>
+                    Открыть Маркет
+                  </button>
+                  <button className="ghost-btn" type="button" onClick={() => openSection('housing', { mine: true })}>
+                    Открыть Жильё
+                  </button>
+                  <button className="ghost-btn" type="button" onClick={() => openSection('jobs', { mine: true })}>
+                    Открыть Работу
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="profile-section">
+                {profileListings.market.length ? (
+                  <div className="profile-section">
+                    <div className="label">Маркет</div>
+                    <div className="catalog-grid">
+                      {profileListings.market.map((listing) => (
+                        <ListingPreviewCard
+                          key={`market-${listing.id}`}
+                          listing={listing}
+                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {profileListings.housing.length ? (
+                  <div className="profile-section">
+                    <div className="label">Жильё</div>
+                    <div className="catalog-grid">
+                      {profileListings.housing.map((listing) => (
+                        <ListingPreviewCard
+                          key={`housing-${listing.id}`}
+                          listing={listing}
+                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {profileListings.jobs.length ? (
+                  <div className="profile-section">
+                    <div className="label">Работа</div>
+                    <div className="catalog-grid">
+                      {profileListings.jobs.map((listing) => (
+                        <ListingPreviewCard
+                          key={`jobs-${listing.id}`}
+                          listing={listing}
+                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {profile && !isEditing ? (
@@ -501,6 +608,26 @@ export default function DatingPage() {
                     </button>
                   </div>
                 </ProfileCard>
+
+                <div className="profile-section">
+                  <div className="label">Объявления пользователя</div>
+                  <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
+                  {otherListingsPreview.length ? (
+                    <div className="catalog-grid">
+                      {otherListingsPreview.map((listing) => (
+                        <ListingPreviewCard
+                          key={`${listing.section}-${listing.id}`}
+                          listing={listing}
+                          onClick={() =>
+                            openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
+                          }
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted">Объявления пользователя пока не найдены.</p>
+                  )}
+                </div>
               </>
             ) : null}
           </div>
