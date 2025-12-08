@@ -169,6 +169,14 @@
   - `job_buddy` — ищу напарника: поиск партнёра для стартапа, pet-проекта или коллаборации.
   - В будущем от выбранных целей будет зависеть фильтрация и рекомендации в ленте.
 
+## Схема данных: Маркет / Жильё / Работа
+- SQL-скрипт: `docs/db/006_market_housing_jobs.sql` — его нужно выполнить в Supabase при разворачивании БД (создаёт таблицы, индексы и триггеры `set_updated_at`).
+- Таблицы объявлений:
+  - `market_listings` — товары и услуги (title, description, category, type, price/currency, city, is_online, status, ссылки на автора).
+  - `housing_listings` — объявления по аренде (offer_type, property_type, city/district, price_per_month, доступность, статус и др.).
+  - `job_listings` — вакансии и резюме (role_type, title, city, employment_format, salary_from/to, experience_level, status).
+- Все таблицы содержат `status` с базовыми значениями draft/active/archived и обновляются по `updated_at` через триггер.
+
 ## API Mini App: знакомства
 Реализованы в `apps/miniapp/app/api/dating/*` (работают при наличии сессионной куки `m7_session`).
 - `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null`.
@@ -280,4 +288,18 @@
   - Добавлен единый список целей знакомств для фронтенда и строгой серверной валидации.
   - Обновлена форма анкеты: показ 10 целей с описаниями, обязательный выбор целей и обработка ошибки `PURPOSES_REQUIRED`.
   - Документация дополнена разделом про цели знакомств.
+
+### Шаг 3 — MVP для Маркет / Жильё / Работа (дата: 2025-12-10)
+- Затронутые файлы и папки:
+  - `apps/miniapp/app/api/market/listings/route.ts`
+  - `apps/miniapp/app/api/housing/listings/route.ts`
+  - `apps/miniapp/app/api/jobs/listings/route.ts`
+  - `apps/miniapp/app/market/page.tsx`
+  - `apps/miniapp/app/housing/page.tsx`
+  - `apps/miniapp/app/jobs/page.tsx`
+  - `README.md`
+- Краткое описание:
+  - Реализованы CRUD API для объявлений Маркета, Жилья и Работы с фильтрами по статусу, городу и специальным параметрам; добавлен параметр `mine=true` для выборки своих записей и валидация статусов draft/active/archived.
+  - В Mini App добавлены рабочие вкладки «Маркет», «Жильё» и «Работа»: лента активных объявлений с фильтрами, блок «Мои объявления» с кнопкой редактирования, простые формы создания/обновления объявлений.
+  - Напоминание: перед использованием разделов необходимо применить SQL `docs/db/006_market_housing_jobs.sql` в Supabase, чтобы таблицы объявлений существовали.
 
