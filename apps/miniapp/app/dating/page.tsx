@@ -8,7 +8,13 @@ import {
   DATING_PURPOSES,
   DatingPurpose,
 } from '../../lib/datingPurposes';
-import { ListingPreview, ListingPreviewGroups } from './types';
+import {
+  ListingAttachment,
+  ListingPreview,
+  ListingPreviewGroups,
+  ListingType,
+  sectionToListingType,
+} from './types';
 import { ListingPreviewCard } from './components/ListingPreviewCard';
 
 type DatingProfile = {
@@ -31,6 +37,8 @@ type DatingProfile = {
   is_verified: boolean;
   status: string;
   created_at: string;
+  has_active_listings: boolean;
+  listings?: ListingPreviewGroups;
 };
 
 type MatchItem = {
@@ -388,6 +396,12 @@ export default function DatingPage() {
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [showMatches, setShowMatches] = useState(false);
   const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
+  const [isSelectingListings, setIsSelectingListings] = useState(false);
+  const [availableListings, setAvailableListings] = useState<ListingPreviewGroups>(EMPTY_LISTINGS);
+  const [selectedAttachments, setSelectedAttachments] = useState<Set<string>>(new Set());
+  const [isLoadingSelections, setIsLoadingSelections] = useState(false);
+  const [isSavingSelections, setIsSavingSelections] = useState(false);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
 
   const currentCard = feed[feedIndex] ?? null;
 
@@ -397,8 +411,9 @@ export default function DatingPage() {
       const response = await fetch('/api/dating/profile');
       const data = await response.json();
       if (data?.ok) {
-        setProfile(data.profile);
-        setProfileListings(data.listings ?? EMPTY_LISTINGS);
+        const nextProfile = data.profile as DatingProfile | null;
+        setProfile(nextProfile);
+        setProfileListings(nextProfile?.listings ?? EMPTY_LISTINGS);
       }
     } catch (error) {
       console.error(error);
@@ -473,10 +488,111 @@ export default function DatingPage() {
   const hasListings = (listings: ListingPreviewGroups) =>
     listings.market.length + listings.housing.length + listings.jobs.length > 0;
 
-  const hasMyListings = useMemo(
-    () => (profile?.show_listings ? hasListings(profileListings) : false),
-    [profile, profileListings],
+  const listingKey = (type: ListingType, id: string) => `${type}:${id}`;
+
+  const openListingSelector = async () => {
+    setIsSelectingListings(true);
+    setIsLoadingSelections(true);
+    setSelectionError(null);
+
+    try {
+      const response = await fetch('/api/dating/profile/listings');
+      const data = await response.json();
+      if (data?.ok) {
+        setAvailableListings(data.available ?? EMPTY_LISTINGS);
+        const attachedKeys = new Set<string>(
+          (data.attached as ListingAttachment[] | undefined)?.map((item) => listingKey(item.listingType, item.listingId)) ?? [],
+        );
+        setSelectedAttachments(attachedKeys);
+      } else {
+        setSelectionError('Не удалось загрузить объявления. Попробуйте позже.');
+      }
+    } catch (error) {
+      console.error(error);
+      setSelectionError('Произошла ошибка при загрузке объявлений.');
+    } finally {
+      setIsLoadingSelections(false);
+    }
+  };
+
+  const toggleAttachment = (type: ListingType, id: string) => {
+    setSelectedAttachments((prev) => {
+      const next = new Set(prev);
+      const key = listingKey(type, id);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const handleSaveListingSelection = async () => {
+    setIsSavingSelections(true);
+    setSelectionError(null);
+    try {
+      const payload = Array.from(selectedAttachments).map((value) => {
+        const [listingType, listingId] = value.split(':');
+        return { listingType: listingType as ListingType, listingId };
+      });
+
+      const response = await fetch('/api/dating/profile/listings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (data?.ok) {
+        setIsSelectingListings(false);
+        fetchProfile();
+      } else {
+        setSelectionError('Не удалось сохранить выбор объявлений.');
+      }
+    } catch (error) {
+      console.error(error);
+      setSelectionError('Произошла ошибка при сохранении.');
+    } finally {
+      setIsSavingSelections(false);
+    }
+  };
+
+  const selectionMeta = (listing: ListingPreview) => {
+    const meta = [listing.city, listing.priceLabel].filter(Boolean);
+    return meta.join(' · ');
+  };
+
+  const renderSelectionGroup = (items: ListingPreview[], title: string) => (
+    <div className="profile-section">
+      <div className="label">{title}</div>
+      {!items.length ? (
+        <p className="muted">Нет активных объявлений.</p>
+      ) : (
+        <div className="checkbox-grid selection-grid">
+          {items.map((listing) => {
+            const type = sectionToListingType(listing.section);
+            const key = listingKey(type, listing.id);
+            return (
+              <label key={key} className={`checkbox-item selection-item ${selectedAttachments.has(key) ? 'selection-item-active' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={selectedAttachments.has(key)}
+                  onChange={() => toggleAttachment(type, listing.id)}
+                />
+                <div>
+                  <div className="selection-title">{listing.title}</div>
+                  <div className="muted small">{selectionMeta(listing) || 'Без дополнительной информации'}</div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
+
+  const hasMySelectedListings = useMemo(() => hasListings(profileListings), [profileListings]);
 
   const isProfileStale = useMemo(() => {
     if (!profile) return false;
@@ -564,7 +680,56 @@ export default function DatingPage() {
   const matchesList = useMemo(() => matches, [matches]);
 
   return (
-    <div className="grid">
+    <>
+      {isSelectingListings ? (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="card-header">
+              <h3>Выбор объявлений для анкеты</h3>
+              <button
+                className="ghost-btn"
+                type="button"
+                onClick={() => {
+                  setIsSelectingListings(false);
+                  setSelectionError(null);
+                }}
+              >
+                Закрыть
+              </button>
+            </div>
+            <p className="muted">Выберите активные объявления, которые будут показаны в вашей анкете знакомств.</p>
+
+            {selectionError ? <div className="hint error">{selectionError}</div> : null}
+            {isLoadingSelections ? (
+              <p className="muted">Загружаем объявления...</p>
+            ) : (
+              <div className="selection-groups">
+                {renderSelectionGroup(availableListings.market, 'Маркет')}
+                {renderSelectionGroup(availableListings.housing, 'Жильё')}
+                {renderSelectionGroup(availableListings.jobs, 'Работа')}
+              </div>
+            )}
+
+            <div className="actions-row" style={{ marginTop: '12px' }}>
+              <button
+                className="ghost-btn"
+                type="button"
+                onClick={() => {
+                  setIsSelectingListings(false);
+                  setSelectionError(null);
+                }}
+              >
+                Отмена
+              </button>
+              <button className="primary-btn" type="button" onClick={handleSaveListingSelection} disabled={isSavingSelections}>
+                {isSavingSelections ? 'Сохраняем...' : 'Сохранить выбор'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid">
       <div className="card">
         <h1 className="hero-title">Знакомства</h1>
         <p className="hero-text">
@@ -605,28 +770,16 @@ export default function DatingPage() {
 
           <div className="card">
             <div className="card-header">
-              <h3>Мои объявления</h3>
+              <h3>Мои объявления в анкете</h3>
+              <button className="ghost-btn" type="button" onClick={openListingSelector}>
+                Выбрать объявления
+              </button>
             </div>
-            <p className="muted">Активные объявления из Маркета, Жилья и Работы, привязанные к этому аккаунту.</p>
+            <p className="muted">Активные объявления из Маркета, Жилья и Работы, которые можно показать в анкете знакомств.</p>
 
             {!profile.show_listings ? (
               <div className="hint warning">Вы скрыли объявления в анкете. Включите переключатель в форме, если хотите показывать их другим пользователям.</div>
-            ) : !hasMyListings ? (
-              <>
-                <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
-                <div className="actions-row">
-                  <button className="ghost-btn" type="button" onClick={() => openSection('market', { mine: true })}>
-                    Открыть Маркет
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => openSection('housing', { mine: true })}>
-                    Открыть Жильё
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => openSection('jobs', { mine: true })}>
-                    Открыть Работу
-                  </button>
-                </div>
-              </>
-            ) : (
+            ) : hasMySelectedListings ? (
               <div className="profile-section">
                 {profileListings.market.length ? (
                   <div className="profile-section">
@@ -673,6 +826,25 @@ export default function DatingPage() {
                   </div>
                 ) : null}
               </div>
+            ) : profile.has_active_listings ? (
+              <div className="hint">
+                У вас есть активные объявления. Выберите, какие из них показывать в анкете.
+              </div>
+            ) : (
+              <>
+                <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
+                <div className="actions-row">
+                  <button className="ghost-btn" type="button" onClick={() => openSection('market', { mine: true })}>
+                    Открыть Маркет
+                  </button>
+                  <button className="ghost-btn" type="button" onClick={() => openSection('housing', { mine: true })}>
+                    Открыть Жильё
+                  </button>
+                  <button className="ghost-btn" type="button" onClick={() => openSection('jobs', { mine: true })}>
+                    Открыть Работу
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </>
@@ -704,32 +876,35 @@ export default function DatingPage() {
                   </div>
                 </ProfileCard>
 
-                {currentCard.show_listings ? (
-                  <div className="profile-section">
-                    <div className="label">Объявления пользователя</div>
-                    <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
-                    {otherListingsPreview.length ? (
-                      <div className="catalog-grid">
-                        {otherListingsPreview.map((listing) => (
-                          <ListingPreviewCard
-                            key={`${listing.section}-${listing.id}`}
-                            listing={listing}
-                            onClick={() =>
-                              openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
-                            }
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="muted">Объявления пользователя пока не найдены.</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="profile-section">
-                    <div className="label">Объявления пользователя</div>
-                    <p className="muted">Пользователь скрывает свои объявления.</p>
-                  </div>
-                )}
+                <div className="profile-section">
+                  <div className="label">Объявления пользователя</div>
+                  {currentCard.show_listings ? (
+                    <>
+                      <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
+                      {otherListingsPreview.length ? (
+                        <div className="catalog-grid">
+                          {otherListingsPreview.map((listing) => (
+                            <ListingPreviewCard
+                              key={`${listing.section}-${listing.id}`}
+                              listing={listing}
+                              onClick={() =>
+                                openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
+                              }
+                            />
+                          ))}
+                        </div>
+                      ) : currentCard.has_active_listings ? (
+                        <p className="muted">У пользователя есть активные объявления, но он не выбрал их для анкеты.</p>
+                      ) : (
+                        <p className="muted">Активные объявления не найдены.</p>
+                      )}
+                    </>
+                  ) : currentCard.has_active_listings ? (
+                    <p className="muted">У пользователя есть активные объявления, но он не делится ими в анкете.</p>
+                  ) : (
+                    <p className="muted">Пользователь пока не публиковал активные объявления.</p>
+                  )}
+                </div>
               </>
             ) : null}
           </div>

@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
-import { getActiveListingsForUser } from '../_helpers/listings';
-import { ListingPreviewGroups } from '../../../dating/types';
+import { getActiveListingsForUser, getHasActiveListings, getSelectionsForProfiles } from '../_helpers/listings';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,26 +67,39 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const listingsByUserId = new Map<string, ListingPreviewGroups>();
-    const baseListings: ListingPreviewGroups = { market: [], housing: [], jobs: [] };
+    const selections = await getSelectionsForProfiles(
+      supabase,
+      profiles?.map((p) => p.id) ?? [],
+    );
 
-    await Promise.all(
+    const responseItems = await Promise.all(
       (profiles ?? []).map(async (profile) => {
         try {
-          const listings = profile.show_listings
-            ? await getActiveListingsForUser(profile.user_id, supabase)
-            : { market: [], housing: [], jobs: [] };
-          listingsByUserId.set(profile.user_id, listings);
+          if (profile.show_listings) {
+            const selection = selections.get(profile.id);
+            const { listings, hasActiveListings } = await getActiveListingsForUser(profile.user_id, supabase, {
+              selection,
+            });
+
+            return {
+              ...profile,
+              listings,
+              has_active_listings: hasActiveListings,
+            };
+          }
+
+          const hasActiveListings = await getHasActiveListings(profile.user_id, supabase);
+
+          return {
+            ...profile,
+            has_active_listings: hasActiveListings,
+          };
         } catch (lookupError) {
           console.error('[dating/feed] listings lookup error', lookupError);
+          return { ...profile, listings: { market: [], housing: [], jobs: [] }, has_active_listings: false };
         }
       }),
     );
-
-    const responseItems = (profiles ?? []).map((profile) => ({
-      ...profile,
-      listings: listingsByUserId.get(profile.user_id) ?? { ...baseListings },
-    }));
 
     return NextResponse.json({ ok: true, items: responseItems });
   } catch (error) {
