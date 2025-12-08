@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 import { DatingPurpose, isDatingPurpose } from '../../../../lib/datingPurposes';
-import { getActiveListingsForUser } from '../_helpers/listings';
+import { getProfileListings } from '../_helpers/listings';
 import { ListingPreviewGroups } from '../../../dating/types';
 
 export const dynamic = 'force-dynamic';
@@ -68,15 +68,19 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const listingsByUserId = new Map<string, ListingPreviewGroups>();
+    const listingsByUserId = new Map<string, { listings: ListingPreviewGroups; hasActiveListings: boolean }>();
     const baseListings: ListingPreviewGroups = { market: [], housing: [], jobs: [] };
 
     await Promise.all(
       (profiles ?? []).map(async (profile) => {
         try {
-          const listings = profile.show_listings
-            ? await getActiveListingsForUser(profile.user_id, supabase)
-            : { market: [], housing: [], jobs: [] };
+          const listings = await getProfileListings({
+            userId: profile.user_id,
+            profileId: profile.id,
+            client: supabase,
+            selectedOnly: true,
+            includeListings: profile.show_listings,
+          });
           listingsByUserId.set(profile.user_id, listings);
         } catch (lookupError) {
           console.error('[dating/feed] listings lookup error', lookupError);
@@ -86,7 +90,10 @@ export async function GET(req: Request) {
 
     const responseItems = (profiles ?? []).map((profile) => ({
       ...profile,
-      listings: listingsByUserId.get(profile.user_id) ?? { ...baseListings },
+      has_active_listings: listingsByUserId.get(profile.user_id)?.hasActiveListings ?? false,
+      listings: profile.show_listings
+        ? listingsByUserId.get(profile.user_id)?.listings ?? { ...baseListings }
+        : undefined,
     }));
 
     return NextResponse.json({ ok: true, items: responseItems });

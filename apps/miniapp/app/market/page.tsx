@@ -50,9 +50,23 @@ const emptyForm: SavePayload = {
   status: 'active',
 };
 
-function ListingCard({ listing, onEdit }: { listing: MarketListing; onEdit?: (item: MarketListing) => void }) {
+function ListingCard({
+  listing,
+  onEdit,
+  anchorId,
+  highlighted,
+}: {
+  listing: MarketListing;
+  onEdit?: (item: MarketListing) => void;
+  anchorId?: string;
+  highlighted?: boolean;
+}) {
   return (
-    <div className="profile-card profile-card-compact">
+    <div
+      className="profile-card profile-card-compact"
+      id={anchorId}
+      style={highlighted ? { outline: '2px solid #7c3aed' } : undefined}
+    >
       <div className="card-header">
         <div>
           <div className="profile-title">{listing.title}</div>
@@ -89,7 +103,8 @@ function ListingCard({ listing, onEdit }: { listing: MarketListing; onEdit?: (it
 
 export default function MarketPage() {
   const searchParams = useSearchParams();
-  const defaultTab = searchParams.get('mine') ? 'mine' : 'feed';
+  const defaultTab = searchParams.get('mine') || searchParams.get('listing') ? 'mine' : 'feed';
+  const highlightedListingId = searchParams.get('listing');
   const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>(defaultTab);
   const [form, setForm] = useState<SavePayload>(emptyForm);
   const [feedFilter, setFeedFilter] = useState<FilterState>({ city: '', category: '', type: '' });
@@ -149,6 +164,15 @@ export default function MarketPage() {
       loadMine();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'mine' && highlightedListingId) {
+      const element = document.getElementById(`market-listing-${highlightedListingId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [activeTab, highlightedListingId, mine.length]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -444,7 +468,13 @@ export default function MarketPage() {
 
           <div className="grid">
             {mine.map((item) => (
-              <ListingCard key={item.id} listing={item} onEdit={handleEdit} />
+              <ListingCard
+                key={item.id}
+                listing={item}
+                onEdit={handleEdit}
+                anchorId={`market-listing-${item.id}`}
+                highlighted={item.id === highlightedListingId}
+              />
             ))}
           </div>
         </div>
