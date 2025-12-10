@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ListingContactActions } from '../_components/ListingContactActions';
+import { ListingReportButton } from '../_components/ListingReportButton';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -94,7 +95,7 @@ function ListingCard({
           </button>
         ) : null}
       </div>
-      {children}
+      {children ? <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</div> : null}
     </div>
   );
 }
@@ -111,6 +112,7 @@ export default function JobsPage() {
   const [loadingMine, setLoadingMine] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [reportToast, setReportToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadFeed = async () => {
@@ -245,12 +247,29 @@ export default function JobsPage() {
     setError(null);
   };
 
+  const handleReportSent = (autoArchived: boolean) => {
+    setReportToast(
+      autoArchived
+        ? 'Жалоба отправлена: объявление временно скрыто до проверки.'
+        : 'Жалоба отправлена модераторам.',
+    );
+    if (autoArchived && activeTab === 'feed') {
+      loadFeed();
+    }
+  };
+
   return (
     <div className="grid">
       <div className="card">
         <h1 className="hero-title">Работа</h1>
         <p className="hero-text">Вакансии и резюме. Фильтруйте по городу, формату и типу роли.</p>
       </div>
+
+      {reportToast ? (
+        <div className="hint success" role="status">
+          {reportToast}
+        </div>
+      ) : null}
 
       <div className="card">
         <div className="card-header">
@@ -450,7 +469,10 @@ export default function JobsPage() {
           <div className="grid">
             {feed.map((item) => (
               <ListingCard key={item.id} listing={item}>
-                <ListingContactActions section="jobs" listingId={item.id} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <ListingContactActions section="jobs" listingId={item.id} />
+                  <ListingReportButton section="jobs" listingId={item.id} onReported={handleReportSent} />
+                </div>
               </ListingCard>
             ))}
           </div>
@@ -470,7 +492,10 @@ export default function JobsPage() {
           <div className="grid">
             {mine.map((item) => (
               <ListingCard key={item.id} listing={item} onEdit={handleEdit}>
-                <ListingContactActions section="jobs" listingId={item.id} isOwner />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <ListingContactActions section="jobs" listingId={item.id} isOwner />
+                  <ListingReportButton section="jobs" listingId={item.id} onReported={handleReportSent} />
+                </div>
               </ListingCard>
             ))}
           </div>
