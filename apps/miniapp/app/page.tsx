@@ -34,16 +34,16 @@ export default async function HomePage() {
   return (
     <>
       <div className="card">
-        <h1 className="hero-title">М7 — маркетплейс внутри Telegram Mini App</h1>
-        <p className="hero-text">
+        <h1 className="card-title">M7 платформа</h1>
+        <p className="card-subtitle">
           Все ключевые сценарии — знакомства, товары и услуги, аренда жилья и поиск работы — собраны в одном приложении.
           Авторизация строится вокруг Telegram @username и одноразовых кодов, которые отправляет бот.
         </p>
       </div>
 
       <div className="card">
-        <h2>Что внутри</h2>
-        <p className="hero-text">
+        <h2 className="card-title">Что внутри</h2>
+        <p className="card-subtitle">
           Минимум переключений: четыре раздела с единым UX, нативная работа внутри Telegram и быстрые уведомления через бота.
         </p>
       </div>
@@ -51,9 +51,11 @@ export default async function HomePage() {
       <ul className="section-list">
         {sections.map((section) => (
           <li key={section.href}>
-            <Link href={section.href}>
-              <h3>{section.title}</h3>
-              <p>{section.description}</p>
+            <Link href={section.href} className="card">
+              <h3 className="card-title" style={{ fontSize: 18 }}>
+                {section.title}
+              </h3>
+              <p className="card-subtitle">{section.description}</p>
             </Link>
           </li>
         ))}
@@ -61,16 +63,16 @@ export default async function HomePage() {
 
       {isModerator ? (
         <div className="card">
-          <h2>Модерация</h2>
-          <p className="hero-text">
+          <h2 className="card-title">Модерация</h2>
+          <p className="card-subtitle">
             Раздел только для модераторов. Чтобы увидеть блок локально, добавьте свой Telegram username в
             переменную окружения MODERATOR_USERNAMES.
           </p>
           <div className="action-buttons">
-            <Link className="primary-btn" href="/moderation/dating">
+            <Link className="btn-primary" href="/moderation/dating">
               Жалобы по знакомствам
             </Link>
-            <Link className="primary-btn" href="/moderation/listings">
+            <Link className="btn-primary" href="/moderation/listings">
               Модерация объявлений
             </Link>
           </div>
