@@ -1,7 +1,7 @@
 :root {
   /* Базовые фоны */
-  --bg-app: #05070a;
-  --bg-app-soft: #080b10;
+  --bg-app: #0f172a;
+  --bg-app-soft: #111827;
 
   /* Поверхности / карточки */
   --surface-card: #ffffff;
@@ -46,6 +46,10 @@ body {
   background: var(--bg-app);
   color: var(--text-on-dark);
   min-height: 100vh;
+}
+
+html {
+  background: var(--bg-app);
 }
 
 a {
