@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ListingContactActions } from '../_components/ListingContactActions';
+import { ListingReportButton } from '../_components/ListingReportButton';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -112,6 +113,7 @@ export default function JobsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reportToast, setReportToast] = useState<string | null>(null);
 
   const loadFeed = async () => {
     setLoadingFeed(true);
@@ -245,6 +247,21 @@ export default function JobsPage() {
     setError(null);
   };
 
+  const handleReportSent = (autoArchived: boolean) => {
+    setReportToast(
+      autoArchived
+        ? 'Жалоба отправлена. Объявление временно скрыто до проверки модератором.'
+        : 'Жалоба отправлена модераторам.',
+    );
+
+    if (activeTab === 'feed') {
+      loadFeed();
+    }
+    if (activeTab === 'mine') {
+      loadMine();
+    }
+  };
+
   return (
     <div className="grid">
       <div className="card">
@@ -271,6 +288,15 @@ export default function JobsPage() {
           </div>
         </div>
       </div>
+
+      {reportToast ? (
+        <div className="hint success" role="status">
+          <div>{reportToast}</div>
+          <button className="ghost-btn" type="button" onClick={() => setReportToast(null)}>
+            Закрыть
+          </button>
+        </div>
+      ) : null}
 
       {activeTab === 'form' ? (
         <div className="card">
@@ -451,6 +477,7 @@ export default function JobsPage() {
             {feed.map((item) => (
               <ListingCard key={item.id} listing={item}>
                 <ListingContactActions section="jobs" listingId={item.id} />
+                <ListingReportButton section="jobs" listingId={item.id} onReported={handleReportSent} />
               </ListingCard>
             ))}
           </div>
@@ -471,6 +498,7 @@ export default function JobsPage() {
             {mine.map((item) => (
               <ListingCard key={item.id} listing={item} onEdit={handleEdit}>
                 <ListingContactActions section="jobs" listingId={item.id} isOwner />
+                <ListingReportButton section="jobs" listingId={item.id} onReported={handleReportSent} />
               </ListingCard>
             ))}
           </div>
