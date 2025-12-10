@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -10,6 +10,17 @@ import {
 } from '../../lib/datingPurposes';
 import { ListingPreview, ListingPreviewGroups } from './types';
 import { ListingPreviewCard } from './components/ListingPreviewCard';
+
+type DatingReportReason = 'escort' | 'scam' | 'drugs' | 'weapons' | 'inappropriate' | 'other';
+
+const REPORT_REASONS: { value: DatingReportReason; label: string }[] = [
+  { value: 'escort', label: 'Эскорт / проституция' },
+  { value: 'scam', label: 'Скам / мошенничество' },
+  { value: 'drugs', label: 'Наркотики' },
+  { value: 'weapons', label: 'Оружие / насилие' },
+  { value: 'inappropriate', label: 'Неподобающий контент' },
+  { value: 'other', label: 'Другое' },
+];
 
 type DatingProfile = {
   id: string;
@@ -31,14 +42,16 @@ type DatingProfile = {
   is_verified: boolean;
   status: string;
   created_at: string;
+  isBanned?: boolean;
 };
 
 type MatchItem = {
   matchId: string;
   userId: string;
   telegramUsername: string;
-  profile: Pick<DatingProfile, 'nickname' | 'purposes' | 'has_photo'> | null;
+  profile: Pick<DatingProfile, 'nickname' | 'purposes' | 'has_photo' | 'isBanned'> | null;
   nicknameFallback: string;
+  isBanned?: boolean;
 };
 
 type DatingProfileWithListings = DatingProfile & { listings?: ListingPreviewGroups };
@@ -82,6 +95,19 @@ function ProfileCard({
   isMine?: boolean;
   compact?: boolean;
 }) {
+  if (profile.isBanned) {
+    return (
+      <div className={`profile-card ${compact ? 'profile-card-compact' : ''}`}>
+        <div className="profile-card-header">
+          <div>
+            <div className="profile-title">Профиль временно недоступен</div>
+            <div className="profile-subtitle">По этому профилю идёт проверка модерацией.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`profile-card ${compact ? 'profile-card-compact' : ''}`}>
       <div className="profile-card-header">
@@ -397,6 +423,10 @@ export default function DatingPage() {
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [showMatches, setShowMatches] = useState(false);
   const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
+  const [reportTarget, setReportTarget] = useState<DatingProfile | null>(null);
+  const [reportReason, setReportReason] = useState<DatingReportReason>('escort');
+  const [reportComment, setReportComment] = useState('');
+  const [reportStatus, setReportStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
   const currentCard = feed[feedIndex] ?? null;
 
@@ -456,6 +486,35 @@ export default function DatingPage() {
       console.error(error);
     } finally {
       setIsLoadingMatches(false);
+    }
+  };
+
+  const openReportModal = (profileToReport: DatingProfile) => {
+    setReportTarget(profileToReport);
+    setReportReason('escort');
+    setReportComment('');
+    setReportStatus('idle');
+  };
+
+  const submitReport = async () => {
+    if (!reportTarget) return;
+    setReportStatus('submitting');
+    try {
+      const response = await fetch('/api/dating/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: reportTarget.user_id, reason: reportReason, comment: reportComment }),
+      });
+
+      const data = await response.json();
+      if (data?.ok) {
+        setReportStatus('success');
+      } else {
+        setReportStatus('error');
+      }
+    } catch (error) {
+      console.error(error);
+      setReportStatus('error');
     }
   };
 
@@ -711,6 +770,9 @@ export default function DatingPage() {
                       Лайк
                     </button>
                   </div>
+                  <button className="ghost-btn" type="button" onClick={() => openReportModal(currentCard)}>
+                    Пожаловаться
+                  </button>
                 </ProfileCard>
 
                 {currentCard.show_listings ? (
@@ -767,9 +829,18 @@ export default function DatingPage() {
                   <div key={match.matchId} className="match-card">
                     <div className="match-title">{match.profile?.nickname ?? match.nicknameFallback}</div>
                     {match.profile?.purposes?.length ? <PurposeBadges purposes={match.profile.purposes} /> : null}
-                    <a className="primary-btn" href={`https://t.me/${match.telegramUsername}`} target="_blank" rel="noreferrer">
-                      Написать в Telegram
-                    </a>
+                    {match.profile?.isBanned || match.isBanned ? (
+                      <div className="hint warning">Профиль временно недоступен: идёт проверка модератором.</div>
+                    ) : (
+                      <a
+                        className="primary-btn"
+                        href={`https://t.me/${match.telegramUsername}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Написать в Telegram
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
@@ -793,6 +864,78 @@ export default function DatingPage() {
             </div>
           </div>
         </>
+      ) : null}
+
+      {reportTarget ? (
+        <div
+          className="modal-backdrop"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="card"
+            style={{ maxWidth: '480px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            <div className="card-header">
+              <h3>Пожаловаться на профиль</h3>
+              <button className="ghost-btn" type="button" onClick={() => setReportTarget(null)}>
+                Закрыть
+              </button>
+            </div>
+
+            <p className="muted">Выберите причину и добавьте комментарий, если нужно.</p>
+
+            <div className="profile-section">
+              {REPORT_REASONS.map((item) => (
+                <label key={item.value} className="radio-item">
+                  <input
+                    type="radio"
+                    name="report-reason"
+                    value={item.value}
+                    checked={reportReason === item.value}
+                    onChange={() => setReportReason(item.value)}
+                  />
+                  <span style={{ marginLeft: '8px' }}>{item.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="profile-section">
+              <div className="label">Комментарий (необязательно)</div>
+              <textarea
+                value={reportComment}
+                onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setReportComment(event.target.value)}
+                placeholder="Опишите проблему"
+              />
+            </div>
+
+            {reportStatus === 'success' ? (
+              <div className="hint success">
+                Жалоба отправлена. При трех жалобах профиль временно блокируется до проверки модератором.
+              </div>
+            ) : null}
+
+            {reportStatus === 'error' ? (
+              <div className="hint error">Не удалось отправить жалобу, попробуйте позже.</div>
+            ) : null}
+
+            <div className="actions-row">
+              <button className="ghost-btn" type="button" onClick={() => setReportTarget(null)}>
+                Отмена
+              </button>
+              <button className="primary-btn" type="button" onClick={submitReport} disabled={reportStatus === 'submitting'}>
+                {reportStatus === 'submitting' ? 'Отправляем...' : 'Отправить жалобу'}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

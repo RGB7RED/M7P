@@ -35,7 +35,7 @@ export async function GET() {
 
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select('id, telegram_username, m7_nickname')
+      .select('id, telegram_username, m7_nickname, status')
       .in('id', otherUserIds);
 
     if (usersError) {
@@ -45,12 +45,10 @@ export async function GET() {
 
     const recentThreshold = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Возвращаем мэтчи только с анкетами, которые остаются активными и актуальными.
     const { data: profiles, error: profilesError } = await supabase
       .from('dating_profiles')
-      .select('id, user_id, nickname, purposes, has_photo, is_active, last_activated_at')
+      .select('id, user_id, nickname, purposes, has_photo, is_active, last_activated_at, status')
       .in('user_id', otherUserIds)
-      .eq('is_active', true)
       .gte('last_activated_at', recentThreshold);
 
     if (profilesError) {
@@ -58,24 +56,21 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
     }
 
-    const activeProfileIds = new Set((profiles ?? []).map((p) => p.user_id));
+    const responseItems = matches.map((match) => {
+      const otherUserId = match.user1_id === currentUser.userId ? match.user2_id : match.user1_id;
+      const user = users?.find((u) => u.id === otherUserId);
+      const profile = profiles?.find((p) => p.user_id === otherUserId);
 
-    const responseItems = matches
-      .map((match) => {
-        const otherUserId = match.user1_id === currentUser.userId ? match.user2_id : match.user1_id;
-        const user = users?.find((u) => u.id === otherUserId);
-        const profile = profiles?.find((p) => p.user_id === otherUserId);
-
-        return {
-          matchId: match.id,
-          userId: otherUserId,
-          telegramUsername: user?.telegram_username ?? '',
-          profile: profile || null,
-          nicknameFallback: user?.m7_nickname ?? '',
-          lastActivityAt: match.last_activity_at,
-        };
-      })
-      .filter((item) => activeProfileIds.has(item.userId));
+      return {
+        matchId: match.id,
+        userId: otherUserId,
+        telegramUsername: user?.telegram_username ?? '',
+        profile: profile ? { ...profile, isBanned: user?.status === 'banned' } : null,
+        isBanned: user?.status === 'banned',
+        nicknameFallback: user?.m7_nickname ?? '',
+        lastActivityAt: match.last_activity_at,
+      };
+    });
 
     return NextResponse.json({ ok: true, items: responseItems });
   } catch (error) {

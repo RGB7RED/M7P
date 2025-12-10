@@ -57,10 +57,11 @@ export async function GET(req: Request) {
     let query = supabase
       .from('dating_profiles')
       .select(
-        'id, user_id, nickname, looking_for, offer, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, show_listings, is_active, last_activated_at, is_verified, status, created_at',
+        'id, user_id, nickname, looking_for, offer, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, show_listings, is_active, last_activated_at, is_verified, status, created_at, users!inner(id,status)',
       )
       .eq('status', 'active')
       .eq('is_active', true)
+      .eq('users.status', 'active')
       .gte('last_activated_at', recentThreshold)
       .neq('user_id', currentUser.userId)
       .order('has_photo', { ascending: false })
@@ -100,7 +101,7 @@ export async function GET(req: Request) {
       }),
     );
 
-    const responseItems = (profiles ?? []).map((profile) => ({
+    const responseItems = (profiles ?? []).map(({ users, ...profile }) => ({
       ...profile,
       listings: listingsByUserId.get(profile.user_id) ?? { ...baseListings },
     }));
