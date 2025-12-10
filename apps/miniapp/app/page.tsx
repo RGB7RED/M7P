@@ -1,5 +1,8 @@
 import Link from 'next/link';
 
+import { getCurrentUser } from '../lib/currentUser';
+import { isModeratorUser } from '../lib/moderators';
+
 const sections = [
   {
     href: '/dating',
@@ -24,7 +27,10 @@ const sections = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const currentUser = await getCurrentUser();
+  const isModerator = isModeratorUser(currentUser);
+
   return (
     <>
       <div className="card">
@@ -52,6 +58,14 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
+
+      {isModerator ? (
+        <div className="links-grid">
+          <Link className="pill" href="/moderation/dating">
+            Модерация знакомств
+          </Link>
+        </div>
+      ) : null}
 
       <p className="footer-note">
         Бот отвечает за выдачу кодов, уведомления и быстрый возврат в Mini App. Дальнейшая логика подключится на следующих этапах.
