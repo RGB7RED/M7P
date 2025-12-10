@@ -47,8 +47,15 @@ function buildFilters(url: URL) {
   const status = normalizeStatus(url.searchParams.get('status'));
   const cityRaw = url.searchParams.get('city');
   const city = cityRaw ? cityRaw.trim() : null;
-  const maxPriceRaw = Number(url.searchParams.get('maxPrice'));
-  const maxPrice = Number.isFinite(maxPriceRaw) ? maxPriceRaw : null;
+  const maxPriceParam = url.searchParams.get('maxPrice');
+  let maxPrice: number | null = null;
+
+  if (maxPriceParam !== null) {
+    const parsedMaxPrice = Number(maxPriceParam);
+    if (Number.isFinite(parsedMaxPrice) && parsedMaxPrice >= 0) {
+      maxPrice = parsedMaxPrice;
+    }
+  }
   const offerTypeRaw = url.searchParams.get('offer_type');
   const offer_type = offerTypeRaw ? offerTypeRaw.trim() : null;
   const propertyTypeRaw = url.searchParams.get('property_type');
