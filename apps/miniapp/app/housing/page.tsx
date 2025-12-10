@@ -1,7 +1,8 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { ListingContactActions } from '../_components/ListingContactActions';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -60,7 +61,15 @@ const emptyForm: SavePayload = {
   status: 'active',
 };
 
-function ListingCard({ listing, onEdit }: { listing: HousingListing; onEdit?: (item: HousingListing) => void }) {
+function ListingCard({
+  listing,
+  onEdit,
+  children,
+}: {
+  listing: HousingListing;
+  onEdit?: (item: HousingListing) => void;
+  children?: ReactNode;
+}) {
   return (
     <div className="profile-card profile-card-compact">
       <div className="card-header">
@@ -94,6 +103,7 @@ function ListingCard({ listing, onEdit }: { listing: HousingListing; onEdit?: (i
           </button>
         ) : null}
       </div>
+      {children}
     </div>
   );
 }
@@ -487,7 +497,9 @@ export default function HousingPage() {
 
           <div className="grid">
             {feed.map((item) => (
-              <ListingCard key={item.id} listing={item} />
+              <ListingCard key={item.id} listing={item}>
+                <ListingContactActions section="housing" listingId={item.id} />
+              </ListingCard>
             ))}
           </div>
         </div>
@@ -505,7 +517,9 @@ export default function HousingPage() {
 
           <div className="grid">
             {mine.map((item) => (
-              <ListingCard key={item.id} listing={item} onEdit={handleEdit} />
+              <ListingCard key={item.id} listing={item} onEdit={handleEdit}>
+                <ListingContactActions section="housing" listingId={item.id} isOwner />
+              </ListingCard>
             ))}
           </div>
         </div>
