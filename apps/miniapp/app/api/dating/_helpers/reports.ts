@@ -45,6 +45,7 @@ export async function createDatingReport(
     reporter_user_id: reporterUserId,
     reason,
     comment,
+    status: 'new',
   });
 
   if (insertError) {
