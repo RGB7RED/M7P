@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { getCurrentUser } from '../../../../../lib/currentUser';
-import { getServiceSupabaseClient } from '../../../../../lib/supabaseConfig';
+import { getCurrentUser } from '../../../../lib/currentUser';
+import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
-import { getCurrentUser } from '../../../../../lib/currentUser';
-import { isModeratorUser } from '../../../../../lib/moderators';
-import { getServiceSupabaseClient } from '../../../../../lib/supabaseConfig';
+import { getCurrentUser } from '../../../../lib/currentUser';
+import { isModeratorUser } from '../../../../lib/moderators';
+import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -198,7 +198,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: 'REPORTS_FETCH_FAILED' }, { status: 500 });
     }
 
-    const reports: ReportRow[] = reportsData ?? [];
+    const reports: ReportRow[] = (reportsData ?? []).map((r) => ({
+      ...r,
+      reporter: Array.isArray(r.reporter) ? r.reporter[0] ?? null : r.reporter,
+      owner: Array.isArray(r.owner) ? r.owner[0] ?? null : r.owner,
+    }));
 
     const marketIds = Array.from(new Set(reports.filter((r) => r.section === 'market').map((r) => r.listing_id)));
     const housingIds = Array.from(new Set(reports.filter((r) => r.section === 'housing').map((r) => r.listing_id)));
