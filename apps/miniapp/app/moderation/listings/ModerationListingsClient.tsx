@@ -9,7 +9,7 @@ type ListingReport = {
   section: Section;
   reason: string;
   comment: string | null;
-  status: 'new' | 'resolved';
+  status: 'new' | 'in_review' | 'resolved';
   created_at: string;
   resolved_at: string | null;
   moderator_note: string | null;
@@ -46,7 +46,7 @@ const FILTER_SECTION_OPTIONS: { value: '' | Section; label: string }[] = [
 ];
 
 export function ModerationListingsClient() {
-  const [filters, setFilters] = useState<{ status: 'all' | 'new' | 'resolved'; section: '' | Section }>({
+  const [filters, setFilters] = useState<{ status: 'all' | 'new' | 'in_review' | 'resolved'; section: '' | Section }>({
     status: 'all',
     section: '',
   });
@@ -173,6 +173,7 @@ export function ModerationListingsClient() {
               >
                 <option value="all">Все</option>
                 <option value="new">Новые</option>
+                <option value="in_review">В работе</option>
                 <option value="resolved">Обработанные</option>
               </select>
             </label>
@@ -225,8 +226,20 @@ export function ModerationListingsClient() {
                 <div className="profile-subtitle">Всего жалоб: {report.totalReports}</div>
                 <div className="profile-subtitle">Статус объявления: {report.listing?.status ?? 'не найдено'}</div>
               </div>
-              <span className={`pill ${report.status === 'resolved' ? 'pill-muted' : ''}`}>
-                {report.status === 'resolved' ? 'Обработано' : 'Новое'}
+              <span
+                className={`status-badge ${
+                  report.status === 'resolved'
+                    ? 'status-resolved'
+                    : report.status === 'in_review'
+                      ? 'status-review'
+                      : 'status-new'
+                }`}
+              >
+                {report.status === 'resolved'
+                  ? 'Обработано'
+                  : report.status === 'in_review'
+                    ? 'В работе'
+                    : 'Новое'}
               </span>
             </div>
 

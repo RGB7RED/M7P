@@ -27,7 +27,7 @@ const REASON_LABELS: Record<DatingReportReason, string> = {
 };
 
 type Filters = {
-  status: 'all' | 'new' | 'resolved';
+  status: 'all' | 'new' | 'in_review' | 'resolved';
   reason: '' | DatingReportReason;
   target: string;
 };
@@ -160,6 +160,7 @@ export function ModerationDatingClient() {
               >
                 <option value="all">Все</option>
                 <option value="new">Новые</option>
+                <option value="in_review">В работе</option>
                 <option value="resolved">Обработанные</option>
               </select>
             </label>
@@ -223,8 +224,20 @@ export function ModerationDatingClient() {
                 <div className="profile-subtitle">Всего жалоб: {report.target?.totalReports ?? 0}</div>
                 <div className="profile-subtitle">{report.target?.isBanned ? 'Сейчас забанен' : 'Сейчас активен'}</div>
               </div>
-              <span className={`pill ${report.status === 'resolved' ? 'pill-muted' : ''}`}>
-                {report.status === 'resolved' ? 'Обработано' : 'Новое'}
+              <span
+                className={`status-badge ${
+                  report.status === 'resolved'
+                    ? 'status-resolved'
+                    : report.status === 'in_review'
+                      ? 'status-review'
+                      : 'status-new'
+                }`}
+              >
+                {report.status === 'resolved'
+                  ? 'Обработано'
+                  : report.status === 'in_review'
+                    ? 'В работе'
+                    : 'Новое'}
               </span>
             </div>
 
