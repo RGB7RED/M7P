@@ -1,6 +1,7 @@
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
+import { LISTING_SECTION_TABLES, ListingSection } from './sections';
 
-export type ListingSection = 'market' | 'housing' | 'jobs';
+export { ListingSection } from './sections';
 
 export interface ListingOwnerContact {
   ownerUserId: string;
@@ -20,18 +21,12 @@ export interface ListingContactPurchaseResult {
   currency: string;
 }
 
-const TABLES: Record<ListingSection, string> = {
-  market: 'market_listings',
-  housing: 'housing_listings',
-  jobs: 'job_listings',
-};
-
 export async function getListingOwnerContact(
   section: ListingSection,
   listingId: string,
 ): Promise<ListingOwnerContact | null> {
   const supabase = getServiceSupabaseClient();
-  const table = TABLES[section];
+  const table = LISTING_SECTION_TABLES[section];
 
   const { data: listing, error: listingError } = await supabase
     .from(table)

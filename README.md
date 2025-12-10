@@ -115,6 +115,14 @@
   - `POST resolveReport|banUser|unbanUser` — обновляет статус жалобы и `users.status`, логирует `resolved_at`, `resolved_by_user_id`, `moderator_note` в таблице `dating_reports` (см. миграцию `docs/db/010_dating_reports_moderation.sql`).
 - Статусы жалоб: `new` (новая), `resolved` (обработана). Исторический `pending` приводится к `new` миграцией `docs/db/010_dating_reports_moderation.sql`. Автобан остаётся по 3 жалобам (`users.status = banned`); ручной бан/анбан меняет `users.status` без удаления жалоб, поэтому повторные жалобы могут снова включить автобан.
 
+### Moderation / Listings
+- Таблица `listing_reports` фиксирует жалобы на объявления Маркета/Жилья/Работы (раздел, listing_id, автор жалобы, владелец, причина, комментарий, статусы `new|resolved`). Миграция: `docs/db/011_listing_reports.sql`.
+- Пользовательское API `/api/listings/report` принимает жалобу `{ section, listingId, reason, comment? }` от авторизованного пользователя, сохраняет запись в `listing_reports` и при трёх новых жалобах автоматически переводит объявление в статус `archived`.
+- Панель модератора `/moderation/listings` (доступ только для `MODERATOR_USERNAMES`) показывает жалобы с фильтрами по статусу и разделу, статистикой по новым жалобам и количеству объявлений с жалобами. В карточке жалобы доступны действия: отметить обработанной, скрыть/вернуть объявление, забанить/разбанить владельца.
+- API `/api/moderation/listings` (только модераторы):
+  - `GET` — жалобы с данными объявлений (название, город, цена, статус), владельцев и авторов, счётчиком жалоб на объявление и сводкой по новым жалобам и количеству активных/архивных объявлений с жалобами.
+  - `POST resolveReport|archiveListing|unarchiveListing|banUser|unbanUser` — обновляет статус жалобы, статус объявления или пользователя, заполняет `resolved_at`, `resolved_by_user_id`, `moderator_note`.
+
 ## Рекомендации и ранжирование
 - Персонализация и сортировка планируются по:
   - геолокации (город, район);
@@ -215,6 +223,11 @@
 - Цель: чтобы по одному `README.md` и документам в `docs/` любой новый разработчик или ИИ-архитектор быстро понимал, что делает М7 платформа и где искать код конкретных частей.
 
 ## История изменений / Tasks log
+
+### Модерация объявлений (жалобы и автоскрытие) (дата: 2025-12-10)
+- **Файлы**: `docs/db/011_listing_reports.sql`, `apps/miniapp/app/api/listings/report/route.ts`, `apps/miniapp/app/api/moderation/listings/**/*`, `apps/miniapp/app/moderation/listings/*`, `apps/miniapp/app/_components/ListingReportButton.tsx`, `apps/miniapp/app/market/page.tsx`, `apps/miniapp/app/housing/page.tsx`, `apps/miniapp/app/jobs/page.tsx`, `README.md`.
+- **Изменения**: добавлена таблица `listing_reports` с уникальными жалобами на объявления и индексами; пользовательское API `/api/listings/report` сохраняет жалобу и при трёх новых жалобах переводит объявление в `archived`; UI карточек Маркета/Жилья/Работы получил кнопку «Пожаловаться» с модальным окном и toast-уведомлением; модераторам доступна панель `/moderation/listings` с фильтрами и действиями по жалобам и статусам объявлений/пользователей; API `/api/moderation/listings` выдаёт жалобы со сводкой и поддерживает действия resolve/archive/unarchive/ban/unban.
+- **Поток данных**: пользователь нажимает «Пожаловаться» на карточке → POST `/api/listings/report` проверяет объявление, сохраняет жалобу в `listing_reports`, при 3 новых жалобах ставит статус `archived` в таблице раздела → модератор открывает `/moderation/listings` (проверка `MODERATOR_USERNAMES`), видит жалобы с данными объявления и владельца → действия панели отправляют POST `/api/moderation/listings` → backend обновляет `listing_reports`, статус объявления в таблице (`market|housing|job_listings`) и при необходимости `users.status`.
 
 ### Инициализация репозитория и базовой структуры (дата: 2025-12-05)
 
