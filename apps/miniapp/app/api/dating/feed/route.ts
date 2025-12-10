@@ -24,6 +24,21 @@ export async function GET(req: Request) {
       .flatMap((p) => p.split(',').map((value) => value.trim()))
       .filter((p): p is DatingPurpose => isDatingPurpose(p));
 
+    const { data: currentProfile, error: profileError } = await supabase
+      .from('dating_profiles')
+      .select('purposes, is_active')
+      .eq('user_id', currentUser.userId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('[dating/feed] current profile lookup error', profileError);
+      return NextResponse.json({ ok: false, error: 'INTERNAL_ERROR' }, { status: 500 });
+    }
+
+    const currentPurposes = Array.isArray(currentProfile?.purposes)
+      ? (currentProfile?.purposes.filter((p): p is DatingPurpose => isDatingPurpose(p)) ?? [])
+      : [];
+
     const { data: swipes, error: swipeError } = await supabase
       .from('dating_swipes')
       .select('to_profile_id')
@@ -52,8 +67,9 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    if (purposesFilter.length) {
-      query = query.overlaps('purposes', purposesFilter);
+    const overlapPurposes = currentPurposes.length ? currentPurposes : purposesFilter;
+    if (overlapPurposes.length) {
+      query = query.overlaps('purposes', overlapPurposes);
     }
 
     if (excludedProfileIds.length) {
