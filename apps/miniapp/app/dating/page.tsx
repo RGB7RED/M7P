@@ -97,6 +97,15 @@ function ProfileCard({
 
       <PurposeBadges purposes={profile.purposes} />
 
+      <div className="links-grid">
+        <span className={`pill ${profile.is_active ? '' : 'pill-muted'}`}>
+          {profile.is_active ? 'Показываюсь в поиске' : 'Скрыто из поиска'}
+        </span>
+        <span className={`pill ${profile.show_listings ? '' : 'pill-muted'}`}>
+          {profile.show_listings ? 'Объявления видны в анкете' : 'Объявления скрыты'}
+        </span>
+      </div>
+
       <div className="profile-section">
         <div className="label">Ищу</div>
         <p>{profile.looking_for}</p>
@@ -727,7 +736,7 @@ export default function DatingPage() {
                 ) : (
                   <div className="profile-section">
                     <div className="label">Объявления пользователя</div>
-                    <p className="muted">Пользователь скрывает свои объявления.</p>
+                    <p className="muted">У пользователя есть активные объявления, но они скрыты настройками профиля.</p>
                   </div>
                 )}
               </>
