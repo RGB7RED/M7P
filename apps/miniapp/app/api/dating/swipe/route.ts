@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '../../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../../lib/supabaseConfig';
+import { isUserBanned } from '../_helpers/reports';
 
 type Decision = 'like' | 'dislike';
 
@@ -22,6 +23,12 @@ export async function POST(req: Request) {
     }
 
     const supabase = getServiceSupabaseClient();
+
+    const isCurrentUserBanned = await isUserBanned(currentUser.userId, supabase);
+
+    if (isCurrentUserBanned) {
+      return NextResponse.json({ ok: false, error: 'ACCOUNT_BANNED' }, { status: 403 });
+    }
 
     const { data: currentProfile } = await supabase
       .from('dating_profiles')
@@ -47,7 +54,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'PROFILE_NOT_FOUND' }, { status: 404 });
     }
 
-    if (targetProfile.status !== 'active') {
+    const isTargetUserBanned = await isUserBanned(targetProfile.user_id, supabase);
+
+    if (targetProfile.status !== 'active' || isTargetUserBanned) {
       return NextResponse.json({ ok: false, error: 'PROFILE_NOT_ACTIVE' }, { status: 400 });
     }
 
