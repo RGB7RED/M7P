@@ -303,6 +303,19 @@ main {
   flex-wrap: wrap;
 }
 
+.action-buttons {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 12px;
+}
+
+.action-buttons .primary-btn {
+  width: 100%;
+  text-align: center;
+  display: inline-block;
+}
+
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

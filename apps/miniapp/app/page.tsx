@@ -60,10 +60,20 @@ export default async function HomePage() {
       </ul>
 
       {isModerator ? (
-        <div className="links-grid">
-          <Link className="pill" href="/moderation/dating">
-            Модерация знакомств
-          </Link>
+        <div className="card">
+          <h2>Модерация</h2>
+          <p className="hero-text">
+            Раздел только для модераторов. Чтобы увидеть блок локально, добавьте свой Telegram username в
+            переменную окружения MODERATOR_USERNAMES.
+          </p>
+          <div className="action-buttons">
+            <Link className="primary-btn" href="/moderation/dating">
+              Жалобы по знакомствам
+            </Link>
+            <Link className="primary-btn" href="/moderation/listings">
+              Модерация объявлений
+            </Link>
+          </div>
         </div>
       ) : null}
 
