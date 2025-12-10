@@ -153,31 +153,36 @@ export async function fetchModerationReports(
     });
   }
 
-  const items: ModerationReportItem[] = reportRows.map((row) => ({
-    id: row.id,
-    reason: row.reason as DatingReportReason,
-    comment: row.comment ?? null,
-    created_at: row.created_at,
-    status: row.status,
-    resolved_at: row.resolved_at ?? null,
-    resolved_by_user_id: row.resolved_by_user_id ?? null,
-    moderator_note: row.moderator_note ?? null,
-    reporter: row.reporter
-      ? {
-          id: row.reporter.id,
-          telegram_username: row.reporter.telegram_username,
-        }
-      : null,
-    target: row.reported_user
-      ? {
-          id: row.reported_user.id,
-          telegram_username: row.reported_user.telegram_username,
-          status: row.reported_user.status,
-          isBanned: row.reported_user.status === 'banned',
-          totalReports: counts.get(row.reported_user.id) ?? 0,
-        }
-      : null,
-  }));
+  const items: ModerationReportItem[] = reportRows.map((row) => {
+    const reporter = Array.isArray(row.reporter) ? row.reporter[0] : row.reporter;
+    const reportedUser = Array.isArray(row.reported_user) ? row.reported_user[0] : row.reported_user;
+
+    return {
+      id: row.id,
+      reason: row.reason as DatingReportReason,
+      comment: row.comment ?? null,
+      created_at: row.created_at,
+      status: row.status,
+      resolved_at: row.resolved_at ?? null,
+      resolved_by_user_id: row.resolved_by_user_id ?? null,
+      moderator_note: row.moderator_note ?? null,
+      reporter: reporter
+        ? {
+            id: reporter.id,
+            telegram_username: reporter.telegram_username,
+          }
+        : null,
+      target: reportedUser
+        ? {
+            id: reportedUser.id,
+            telegram_username: reportedUser.telegram_username,
+            status: reportedUser.status,
+            isBanned: reportedUser.status === 'banned',
+            totalReports: counts.get(reportedUser.id) ?? 0,
+          }
+        : null,
+    };
+  });
 
   const reasons = await reasonsPromise;
   return { items, reasons };
