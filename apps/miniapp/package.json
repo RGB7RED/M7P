@@ -3,9 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "prebuild": "npm run prisma:generate",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "prisma:generate": "prisma generate --schema ../../prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
