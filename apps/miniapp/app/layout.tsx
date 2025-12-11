@@ -17,11 +17,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="ru">
       <body>
         <header className="header">
-          <div>
-            <div className="logo">М7 платформа</div>
-            <div className="subtitle">Знакомства · Маркет · Жильё · Работа</div>
-          </div>
-          <span className="subtitle">{currentUser ? `@${currentUser.telegram_username}` : 'Mini App'}</span>
+          <div className="header-title">М7 платформа</div>
         </header>
         <main>{currentUser ? children : <AuthForm />}</main>
         {currentUser ? <MainTabs /> : null}
