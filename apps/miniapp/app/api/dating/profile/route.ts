@@ -136,8 +136,12 @@ function validateProfileBody(
     ? body.photo_urls.map((url) => String(url).trim()).filter(Boolean)
     : options.existingProfile?.photo_urls ?? [];
 
-  const preferredGendersRaw = Array.isArray(body.preferred_genders) ? body.preferred_genders : options.existingProfile?.preferred_genders ?? [];
-  const preferred_genders = preferredGendersRaw.filter((g): g is UserGender => isUserGender(g) && g !== 'na');
+  const preferredGendersRaw = Array.isArray(body.preferred_genders)
+    ? body.preferred_genders
+    : options.existingProfile?.preferred_genders ?? [];
+  const preferred_genders = (preferredGendersRaw as unknown[]).filter(
+    (g): g is UserGender => isUserGender(g) && g !== 'na',
+  );
 
   if (!preferred_genders.length) {
     return { ok: false as const, error: 'PREFERRED_GENDERS_REQUIRED' };

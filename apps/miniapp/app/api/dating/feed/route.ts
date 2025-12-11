@@ -56,7 +56,9 @@ export async function GET(req: Request) {
 
     const userAge = calculateAge(userRow?.birth_date ?? null);
     const userIsMinor = isMinorAge(userAge);
-    const preferredGenders = (currentProfile?.preferred_genders ?? []).filter((g) => typeof g === 'string');
+    const preferredGenders = ((currentProfile?.preferred_genders ?? []) as unknown[]).filter(
+      (g): g is string => typeof g === 'string',
+    );
     const preferredAgeMinRaw = Number.isFinite(currentProfile?.preferred_age_min)
       ? Number(currentProfile?.preferred_age_min)
       : userIsMinor
