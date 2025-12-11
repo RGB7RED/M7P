@@ -1,3 +1,5 @@
+@import url('leaflet/dist/leaflet.css');
+
 :root {
   /* Общий фон приложения */
   --bg: #e5e7eb; /* светло-серый с лёгким синим оттенком */
@@ -318,12 +320,27 @@ main {
   overflow: hidden;
 }
 
-.map-frame {
-  display: block;
-  width: 100%;
-  min-height: 320px;
-  max-height: 70vh;
-  border: 0;
+.map-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 14px;
+  background: var(--panel-elevated);
+}
+
+.map-point-icon {
+  background: transparent;
+  border: none;
+}
+
+.map-point-pin {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .section-list {
