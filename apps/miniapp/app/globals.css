@@ -85,7 +85,7 @@ a {
 }
 
 .hub-page {
-  padding-top: max(calc(env(safe-area-inset-top, 0px) + 28px), 20vh);
+  padding-top: max(calc(env(safe-area-inset-top, 0px) + 28px), 10vh);
 }
 
 .section-layout {
