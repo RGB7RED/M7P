@@ -4,6 +4,8 @@ import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ListingContactActions } from '../_components/ListingContactActions';
 import { ListingReportButton } from '../_components/ListingReportButton';
+import { SectionHeaderCard } from '../components/SectionHeaderCard';
+import { SectionLayout } from '../components/SectionLayout';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -248,14 +250,11 @@ export default function MarketPage() {
   };
 
   return (
-    <div className="grid">
-      <div className="card">
-        <h1 className="hero-title">Маркет</h1>
-        <p className="hero-text">
-          Размещайте товары и услуги, ищите предложения по фильтрам города, категории и типа. В любой момент можно отредактировать
-          своё объявление.
-        </p>
-      </div>
+    <SectionLayout>
+      <SectionHeaderCard
+        title="Маркет"
+        subtitle="Товары и услуги с фильтрами по городу, категории и типу. В любой момент можно отредактировать своё объявление."
+      />
 
       {reportToast ? (
         <div className="hint success" role="status">
@@ -263,10 +262,11 @@ export default function MarketPage() {
         </div>
       ) : null}
 
-      <div className="card">
-        <div className="card-header">
-          <div>
-            <h2>Навигация</h2>
+      <div className="grid">
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h2>Навигация</h2>
             <p className="subtitle">Лента активных объявлений, ваши записи и форма создания</p>
           </div>
           <div className="links-grid">
@@ -290,10 +290,10 @@ export default function MarketPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      {activeTab === 'form' ? (
-        <div className="card">
+        {activeTab === 'form' ? (
+          <div className="card">
           <div className="card-header">
             <h2>{form.id ? 'Редактирование объявления' : 'Новое объявление'}</h2>
             {form.id ? <span className="pill">ID: {form.id}</span> : null}
@@ -420,11 +420,11 @@ export default function MarketPage() {
               </button>
             </div>
           </form>
-        </div>
-      ) : null}
+          </div>
+        ) : null}
 
-      {activeTab === 'feed' ? (
-        <div className="card">
+        {activeTab === 'feed' ? (
+          <div className="card">
           <div className="card-header">
             <h2>Лента объявлений</h2>
             <p className="subtitle">Все активные объявления по выбранным фильтрам</p>
@@ -463,11 +463,11 @@ export default function MarketPage() {
               </ListingCard>
             ))}
           </div>
-        </div>
-      ) : null}
+          </div>
+        ) : null}
 
-      {activeTab === 'mine' ? (
-        <div className="card">
+        {activeTab === 'mine' ? (
+          <div className="card">
           <div className="card-header">
             <h2>Мои объявления</h2>
             <p className="subtitle">Созданные вами записи, доступные для редактирования</p>
@@ -486,8 +486,9 @@ export default function MarketPage() {
               </ListingCard>
             ))}
           </div>
-        </div>
-      ) : null}
-    </div>
+          </div>
+        ) : null}
+      </div>
+    </SectionLayout>
   );
 }

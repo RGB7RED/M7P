@@ -70,6 +70,46 @@ main {
   padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
+.section-layout {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4px 0 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.section-header-card {
+  background: linear-gradient(145deg, #ffffff, #f3f4f6);
+  border-radius: 22px;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-strong);
+  display: grid;
+  gap: 10px;
+}
+
+.section-header-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.section-header-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.section-header-helper {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .hub-layout {
   display: grid;
   gap: 18px;

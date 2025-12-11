@@ -4,6 +4,8 @@ import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ListingContactActions } from '../_components/ListingContactActions';
 import { ListingReportButton } from '../_components/ListingReportButton';
+import { SectionHeaderCard } from '../components/SectionHeaderCard';
+import { SectionLayout } from '../components/SectionLayout';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -259,11 +261,11 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="grid">
-      <div className="card">
-        <h1 className="hero-title">Работа</h1>
-        <p className="hero-text">Вакансии и резюме. Фильтруйте по городу, формату и типу роли.</p>
-      </div>
+    <SectionLayout>
+      <SectionHeaderCard
+        title="Работа"
+        subtitle="Вакансии и резюме с фильтрами по городу, формату и типу роли."
+      />
 
       {reportToast ? (
         <div className="hint success" role="status">
@@ -271,10 +273,11 @@ export default function JobsPage() {
         </div>
       ) : null}
 
-      <div className="card">
-        <div className="card-header">
-          <div>
-            <h2>Навигация</h2>
+      <div className="grid">
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h2>Навигация</h2>
             <p className="subtitle">Лента, личные объявления и форма</p>
           </div>
           <div className="links-grid">
@@ -289,10 +292,10 @@ export default function JobsPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      {activeTab === 'form' ? (
-        <div className="card">
+        {activeTab === 'form' ? (
+          <div className="card">
           <div className="card-header">
             <h2>{form.id ? 'Редактирование объявления' : 'Новое объявление'}</h2>
             {form.id ? <span className="pill">ID: {form.id}</span> : null}
@@ -432,11 +435,11 @@ export default function JobsPage() {
               </button>
             </div>
           </form>
-        </div>
-      ) : null}
+          </div>
+        ) : null}
 
-      {activeTab === 'feed' ? (
-        <div className="card">
+        {activeTab === 'feed' ? (
+          <div className="card">
           <div className="card-header">
             <h2>Лента объявлений</h2>
             <p className="subtitle">Активные вакансии и резюме</p>
@@ -476,11 +479,11 @@ export default function JobsPage() {
               </ListingCard>
             ))}
           </div>
-        </div>
-      ) : null}
+          </div>
+        ) : null}
 
-      {activeTab === 'mine' ? (
-        <div className="card">
+        {activeTab === 'mine' ? (
+          <div className="card">
           <div className="card-header">
             <h2>Мои объявления</h2>
             <p className="subtitle">Ваши вакансии и резюме</p>
@@ -499,8 +502,9 @@ export default function JobsPage() {
               </ListingCard>
             ))}
           </div>
-        </div>
-      ) : null}
-    </div>
+          </div>
+        ) : null}
+      </div>
+    </SectionLayout>
   );
 }

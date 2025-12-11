@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 import type { DatingReportReason } from '../../api/dating/_helpers/reports';
 import type { DatingModerationStats } from '../../api/moderation/dating/_helpers/stats';
+import { SectionHeaderCard } from '../../components/SectionHeaderCard';
+import { SectionLayout } from '../../components/SectionLayout';
 
 export type ModerationReport = {
   id: string;
@@ -129,13 +131,11 @@ export function ModerationDatingClient() {
   };
 
   return (
-    <div className="grid" style={{ gap: '16px' }}>
-      <div className="card">
-        <h2>Модерация знакомств</h2>
-        <p className="subtitle">Просмотр и обработка жалоб, управление банами.</p>
-      </div>
+    <SectionLayout>
+      <SectionHeaderCard title="Модерация" subtitle="Просмотр и обработка жалоб по разделу знакомств." />
 
-      <div className="card">
+      <div className="grid" style={{ gap: '16px' }}>
+        <div className="card">
         <h3>Статистика</h3>
         <div className="links-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
           {statsCards.map((item) => (
@@ -287,6 +287,6 @@ export function ModerationDatingClient() {
           </div>
         ))}
       </div>
-    </div>
+    </SectionLayout>
   );
 }
