@@ -1,4 +1,4 @@
-import LeafletMap from '../components/LeafletMap';
+import MapView from '../components/MapView';
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
 import { SectionLayout } from '../components/SectionLayout';
 import { TelegramBackToRoot } from '../components/TelegramBackToRoot';
@@ -12,7 +12,7 @@ export default function MapsPage() {
         subtitle="Объявления на карте. В будущем здесь появятся точки со знакомствами, товарами, жильём и работой."
       />
 
-      <LeafletMap height={400} />
+      <MapView />
     </SectionLayout>
   );
 }
