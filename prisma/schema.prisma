@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MapPoint {
+  id          String   @id @default(uuid())
+  listingType String   @map("listing_type")
+  listingId   String?  @map("listing_id")
+  title       String
+  description String?
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now()) @map("created_at")
+  isActive    Boolean  @default(true)  @map("is_active")
+
+  @@map("map_points")
+}
