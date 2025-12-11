@@ -2,6 +2,9 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
+import { SectionHeaderCard } from '../../components/SectionHeaderCard';
+import { SectionLayout } from '../../components/SectionLayout';
+
 type Section = 'market' | 'housing' | 'jobs';
 
 type ListingReport = {
@@ -139,31 +142,29 @@ export function ModerationListingsClient() {
   };
 
   return (
-    <div className="grid" style={{ gap: '16px' }}>
-      <div className="card">
-        <h1 className="hero-title">Модерация объявлений</h1>
-        <p className="hero-text">
-          Жалобы на объявления в Маркете, Жилье и Работе. Здесь можно просматривать обращения пользователей, скрывать или
-          возвращать объявления и управлять статусами владельцев.
-        </p>
-      </div>
+    <SectionLayout>
+      <SectionHeaderCard
+        title="Модерация"
+        subtitle="Жалобы на объявления в Маркете, Жилье и Работе. Просмотр обращений, скрытие карточек и управление статусами."
+      />
 
-      <div className="card">
-        <h3>Статистика</h3>
-        <div className="links-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
-          {statsCards.map((item) => (
+      <div className="grid" style={{ gap: '16px' }}>
+        <div className="card">
+          <h3>Статистика</h3>
+          <div className="links-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            {statsCards.map((item) => (
             <div key={item.label} className="profile-card-compact" style={{ background: 'rgba(255,255,255,0.02)', padding: 12 }}>
               <div className="profile-title">{item.value}</div>
               <div className="profile-subtitle">{item.label}</div>
             </div>
           ))}
         </div>
-      </div>
+        </div>
 
-      <div className="card">
-        <h3>Фильтры</h3>
-        <form onSubmit={handleSubmit} className="grid" style={{ gap: 12 }}>
-          <div className="links-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+        <div className="card">
+          <h3>Фильтры</h3>
+          <form onSubmit={handleSubmit} className="grid" style={{ gap: 12 }}>
+            <div className="links-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
             <label className="input-label" style={{ display: 'grid', gap: 6 }}>
               Статус жалобы
               <select
@@ -203,18 +204,18 @@ export function ModerationListingsClient() {
             </button>
           </div>
         </form>
-      </div>
-
-      {error ? (
-        <div className="hint error" role="alert">
-          {error}
         </div>
-      ) : null}
 
-      <div className="grid" style={{ gap: 12 }}>
-        {reports.length === 0 && !loading ? (
-          <div className="card">
-            <p className="subtitle">Жалобы по выбранным фильтрам не найдены.</p>
+        {error ? (
+          <div className="hint error" role="alert">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="grid" style={{ gap: 12 }}>
+          {reports.length === 0 && !loading ? (
+            <div className="card">
+              <p className="subtitle">Жалобы по выбранным фильтрам не найдены.</p>
           </div>
         ) : null}
 
@@ -324,7 +325,8 @@ export function ModerationListingsClient() {
             </div>
           </div>
         ))}
+        </div>
       </div>
-    </div>
+    </SectionLayout>
   );
 }

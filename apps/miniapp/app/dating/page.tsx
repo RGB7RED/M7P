@@ -10,6 +10,8 @@ import {
 } from '../../lib/datingPurposes';
 import { ListingPreview, ListingPreviewGroups } from './types';
 import { ListingPreviewCard } from './components/ListingPreviewCard';
+import { SectionHeaderCard } from '../components/SectionHeaderCard';
+import { SectionLayout } from '../components/SectionLayout';
 
 type DatingReportReason = 'escort' | 'scam' | 'drugs' | 'weapons' | 'inappropriate' | 'other';
 
@@ -632,239 +634,231 @@ export default function DatingPage() {
   const matchesList = useMemo(() => matches, [matches]);
 
   return (
-    <div className="grid">
-      <div className="card">
-        <h1 className="hero-title">Знакомства</h1>
-        <p className="hero-text">
-          Свайпы, быстрые мэтчи и переход в Telegram. Заполните свою анкету, чтобы попасть в ленту и получать взаимные лайки.
-        </p>
-      </div>
+    <SectionLayout>
+      <SectionHeaderCard
+        title="Знакомства"
+        subtitle="Свайпы, быстрые мэтчи и переход в Telegram. Заполните анкету, чтобы попадать в ленту и получать взаимные лайки."
+      />
 
-      {matchNotice ? <div className="hint success">{matchNotice}</div> : null}
+      <div className="grid">
+        {matchNotice ? <div className="hint success">{matchNotice}</div> : null}
 
-      {profile && !isEditing && isProfileStale ? (
-        <div className="hint warning">
-          Анкета неактуальна: её не обновляли более 90 дней или она выключена. Обновите данные, чтобы снова показываться в поиске.
-          <div className="actions-row" style={{ marginTop: '8px' }}>
-            <button className="primary-btn" type="button" onClick={handleRefreshProfile} disabled={isRefreshingProfile}>
-              {isRefreshingProfile ? 'Обновляем...' : 'Обновить анкету'}
-            </button>
-            <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
-              Изменить данные
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {isLoadingProfile ? (
-        <div className="card">Загружаем вашу анкету...</div>
-      ) : !profile || isEditing ? (
-        <ProfileForm initialProfile={profile} onSaved={handleSavedProfile} onCancel={() => setIsEditing(false)} />
-      ) : (
-        <>
-          <div className="card">
-            <h2>Моя анкета</h2>
-            <ProfileCard profile={profile} isMine>
+        {profile && !isEditing && isProfileStale ? (
+          <div className="hint warning">
+            Анкета неактуальна: её не обновляли более 90 дней или она выключена. Обновите данные, чтобы снова показываться в
+            поиске.
+            <div className="actions-row" style={{ marginTop: '8px' }}>
+              <button className="primary-btn" type="button" onClick={handleRefreshProfile} disabled={isRefreshingProfile}>
+                {isRefreshingProfile ? 'Обновляем...' : 'Обновить анкету'}
+              </button>
               <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
-                Редактировать
+                Изменить данные
               </button>
-            </ProfileCard>
-          </div>
-
-          <div className="card">
-            <div className="card-header">
-              <h3>Мои объявления</h3>
             </div>
-            <p className="muted">Активные объявления из Маркета, Жилья и Работы, привязанные к этому аккаунту.</p>
+          </div>
+        ) : null}
 
-            {!profile.show_listings ? (
-              <div className="hint warning">Вы скрыли объявления в анкете. Включите переключатель в форме, если хотите показывать их другим пользователям.</div>
-            ) : !hasMyListings ? (
-              <>
-                <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
-                <div className="actions-row">
-                  <button className="ghost-btn" type="button" onClick={() => openSection('market', { mine: true })}>
-                    Открыть Маркет
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => openSection('housing', { mine: true })}>
-                    Открыть Жильё
-                  </button>
-                  <button className="ghost-btn" type="button" onClick={() => openSection('jobs', { mine: true })}>
-                    Открыть Работу
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="profile-section">
-                {profileListings.market.length ? (
-                  <div className="profile-section">
-                    <div className="label">Маркет</div>
-                    <div className="catalog-grid">
-                      {profileListings.market.map((listing) => (
-                        <ListingPreviewCard
-                          key={`market-${listing.id}`}
-                          listing={listing}
-                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
+        {isLoadingProfile ? (
+          <div className="card">Загружаем вашу анкету...</div>
+        ) : !profile || isEditing ? (
+          <ProfileForm initialProfile={profile} onSaved={handleSavedProfile} onCancel={() => setIsEditing(false)} />
+        ) : (
+          <>
+            <div className="card">
+              <h2>Моя анкета</h2>
+              <ProfileCard profile={profile} isMine>
+                <button className="ghost-btn" type="button" onClick={() => setIsEditing(true)}>
+                  Редактировать
+                </button>
+              </ProfileCard>
+            </div>
 
-                {profileListings.housing.length ? (
-                  <div className="profile-section">
-                    <div className="label">Жильё</div>
-                    <div className="catalog-grid">
-                      {profileListings.housing.map((listing) => (
-                        <ListingPreviewCard
-                          key={`housing-${listing.id}`}
-                          listing={listing}
-                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {profileListings.jobs.length ? (
-                  <div className="profile-section">
-                    <div className="label">Работа</div>
-                    <div className="catalog-grid">
-                      {profileListings.jobs.map((listing) => (
-                        <ListingPreviewCard
-                          key={`jobs-${listing.id}`}
-                          listing={listing}
-                          onClick={() => openSection(listing.section, { mine: true, listingId: listing.id })}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
+            <div className="card">
+              <div className="card-header">
+                <h3>Мои объявления</h3>
               </div>
-            )}
-          </div>
-        </>
-      )}
+              <p className="muted">Активные объявления из Маркета, Жилья и Работы, привязанные к этому аккаунту.</p>
 
-      {profile && !isEditing ? (
-        <>
-          <div className="card">
-            <div className="card-header">
-              <h2>Лента знакомств</h2>
-              <button className="ghost-btn" type="button" onClick={fetchFeed} disabled={isLoadingFeed}>
-                Обновить ленту
-              </button>
-            </div>
-
-            {isLoadingFeed ? <p className="muted">Загружаем...</p> : null}
-            {!currentCard && !isLoadingFeed ? <p className="muted">Новых анкет нет. Обновите позже.</p> : null}
-
-            {currentCard ? (
-              <>
-                <ProfileCard profile={currentCard}>
+              {!profile.show_listings ? (
+                <div className="hint warning">Вы скрыли объявления в анкете. Включите переключатель в форме, если хотите показывать их другим пользователям.</div>
+              ) : !hasMyListings ? (
+                <>
+                  <div className="hint">У вас пока нет активных объявлений. Создайте их в разделах Маркет, Жильё или Работа — и они появятся здесь.</div>
                   <div className="actions-row">
-                    <button className="ghost-btn" type="button" onClick={() => handleSwipe('dislike')}>
-                      Пропустить
+                    <button className="ghost-btn" type="button" onClick={() => openSection('market', { mine: true })}>
+                      Открыть Маркет
                     </button>
-                    <button className="primary-btn" type="button" onClick={() => handleSwipe('like')}>
-                      Лайк
+                    <button className="ghost-btn" type="button" onClick={() => openSection('housing', { mine: true })}>
+                      Открыть Жильё
+                    </button>
+                    <button className="ghost-btn" type="button" onClick={() => openSection('jobs', { mine: true })}>
+                      Открыть Работу
                     </button>
                   </div>
-                  <button className="ghost-btn" type="button" onClick={() => openReportModal(currentCard)}>
-                    Пожаловаться
-                  </button>
-                </ProfileCard>
-
-                {currentCard.show_listings ? (
-                  <div className="profile-section">
-                    <div className="label">Объявления пользователя</div>
-                    <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
-                    {otherListingsPreview.length ? (
+                </>
+              ) : (
+                <div className="profile-section">
+                  {profileListings.market.length ? (
+                    <div className="profile-section">
+                      <div className="label">Маркет</div>
                       <div className="catalog-grid">
-                        {otherListingsPreview.map((listing) => (
+                        {profileListings.market.map((listing) => (
                           <ListingPreviewCard
-                            key={`${listing.section}-${listing.id}`}
+                            key={listing.id}
                             listing={listing}
-                            onClick={() =>
-                              openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })
-                            }
+                            onClick={() => openSection('market', { listingId: listing.id })}
                           />
                         ))}
                       </div>
-                    ) : (
-                      <p className="muted">Объявления пользователя пока не найдены.</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="profile-section">
-                    <div className="label">Объявления пользователя</div>
-                    <p className="muted">У пользователя есть активные объявления, но они скрыты настройками профиля.</p>
-                  </div>
-                )}
-              </>
-            ) : null}
-          </div>
-
-          <div className="card">
-            <div className="card-header">
-              <h2>Мои мэтчи</h2>
-              <button
-                className="ghost-btn"
-                type="button"
-                onClick={() => {
-                  setShowMatches((prev) => !prev);
-                  if (!showMatches) {
-                    fetchMatches();
-                  }
-                }}
-              >
-                {showMatches ? 'Скрыть' : 'Показать'}
-              </button>
+                    </div>
+                  ) : null}
+                  {profileListings.housing.length ? (
+                    <div className="profile-section">
+                      <div className="label">Жильё</div>
+                      <div className="catalog-grid">
+                        {profileListings.housing.map((listing) => (
+                          <ListingPreviewCard
+                            key={listing.id}
+                            listing={listing}
+                            onClick={() => openSection('housing', { listingId: listing.id })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {profileListings.jobs.length ? (
+                    <div className="profile-section">
+                      <div className="label">Работа</div>
+                      <div className="catalog-grid">
+                        {profileListings.jobs.map((listing) => (
+                          <ListingPreviewCard
+                            key={listing.id}
+                            listing={listing}
+                            onClick={() => openSection('jobs', { listingId: listing.id })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
-            {showMatches ? (
-              <div className="matches-list">
-                {isLoadingMatches ? <p className="muted">Загружаем...</p> : null}
-                {!isLoadingMatches && !matchesList.length ? <p className="muted">Пока нет матчей.</p> : null}
-                {matchesList.map((match) => (
-                  <div key={match.matchId} className="match-card">
-                    <div className="match-title">{match.profile?.nickname ?? match.nicknameFallback}</div>
-                    {match.profile?.purposes?.length ? <PurposeBadges purposes={match.profile.purposes} /> : null}
-                    {match.profile?.isBanned || match.isBanned ? (
-                      <div className="hint warning">Профиль временно недоступен: идёт проверка модератором.</div>
-                    ) : (
-                      <a
-                        className="primary-btn"
-                        href={`https://t.me/${match.telegramUsername}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Написать в Telegram
-                      </a>
-                    )}
-                  </div>
+          </>
+        )}
+
+        {profile && !isEditing ? (
+          <>
+            <div className="card">
+              <div className="card-header">
+                <h2>Лента знакомств</h2>
+                <button className="ghost-btn" type="button" onClick={fetchFeed} disabled={isLoadingFeed}>
+                  Обновить ленту
+                </button>
+              </div>
+
+              {isLoadingFeed ? <p className="muted">Загружаем...</p> : null}
+              {!currentCard && !isLoadingFeed ? <p className="muted">Новых анкет нет. Обновите позже.</p> : null}
+
+              {currentCard ? (
+                <>
+                  <ProfileCard profile={currentCard}>
+                    <div className="actions-row">
+                      <button className="ghost-btn" type="button" onClick={() => handleSwipe('dislike')}>
+                        Пропустить
+                      </button>
+                      <button className="primary-btn" type="button" onClick={() => handleSwipe('like')}>
+                        Лайк
+                      </button>
+                    </div>
+                    <button className="ghost-btn" type="button" onClick={() => openReportModal(currentCard)}>
+                      Пожаловаться
+                    </button>
+                  </ProfileCard>
+
+                  {currentCard.show_listings ? (
+                    <div className="profile-section">
+                      <div className="label">Объявления пользователя</div>
+                      <p className="subtitle">Активные объявления из разделов М7 платформы.</p>
+                      {otherListingsPreview.length ? (
+                        <div className="catalog-grid">
+                          {otherListingsPreview.map((listing) => (
+                            <ListingPreviewCard
+                              key={`${listing.section}-${listing.id}`}
+                              listing={listing}
+                              onClick={() => openSection(listing.section, { listingId: listing.id, authorId: currentCard.user_id })}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="muted">Объявления пользователя пока не найдены.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="profile-section">
+                      <div className="label">Объявления пользователя</div>
+                      <p className="muted">У пользователя есть активные объявления, но они скрыты настройками профиля.</p>
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </div>
+
+            <div className="card">
+              <div className="card-header">
+                <h2>Мои мэтчи</h2>
+                <button
+                  className="ghost-btn"
+                  type="button"
+                  onClick={() => {
+                    setShowMatches((prev) => !prev);
+                    if (!showMatches) {
+                      fetchMatches();
+                    }
+                  }}
+                >
+                  {showMatches ? 'Скрыть' : 'Показать'}
+                </button>
+              </div>
+              {showMatches ? (
+                <div className="matches-list">
+                  {isLoadingMatches ? <p className="muted">Загружаем...</p> : null}
+                  {!isLoadingMatches && !matchesList.length ? <p className="muted">Пока нет матчей.</p> : null}
+                  {matchesList.map((match) => (
+                    <div key={match.matchId} className="match-card">
+                      <div className="match-title">{match.profile?.nickname ?? match.nicknameFallback}</div>
+                      {match.profile?.purposes?.length ? <PurposeBadges purposes={match.profile.purposes} /> : null}
+                      {match.profile?.isBanned || match.isBanned ? (
+                        <div className="hint warning">Профиль временно недоступен: идёт проверка модератором.</div>
+                      ) : (
+                        <a className="primary-btn" href={`https://t.me/${match.telegramUsername}`} target="_blank" rel="noreferrer">
+                          Написать в Telegram
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="muted">Здесь будут ваши взаимные лайки. Откройте список, чтобы написать в Telegram.</p>
+              )}
+            </div>
+
+            <div className="card">
+              <div className="card-header">
+                <h2>Каталог</h2>
+                <button className="ghost-btn" type="button" onClick={fetchCatalog}>
+                  Обновить
+                </button>
+              </div>
+              {!catalog.length ? <p className="muted">Пока нет новых анкет.</p> : null}
+              <div className="catalog-grid">
+                {catalog.map((item) => (
+                  <ProfileCard key={item.id} profile={item} compact />
                 ))}
               </div>
-            ) : (
-              <p className="muted">Здесь будут ваши взаимные лайки. Откройте список, чтобы написать в Telegram.</p>
-            )}
-          </div>
-
-          <div className="card">
-            <div className="card-header">
-              <h2>Каталог</h2>
-              <button className="ghost-btn" type="button" onClick={fetchCatalog}>
-                Обновить
-              </button>
             </div>
-            {!catalog.length ? <p className="muted">Пока нет новых анкет.</p> : null}
-            <div className="catalog-grid">
-              {catalog.map((item) => (
-                <ProfileCard key={item.id} profile={item} compact />
-              ))}
-            </div>
-          </div>
-        </>
-      ) : null}
+          </>
+        ) : null}
+      </div>
 
       {reportTarget ? (
         <div
@@ -937,6 +931,6 @@ export default function DatingPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </SectionLayout>
   );
 }
