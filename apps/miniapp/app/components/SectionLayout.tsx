@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { useSwipeBackToHub } from '../hooks/useSwipeBackToHub';
 import { useTelegramBackButton } from '../../lib/useTelegramBackButton';
 
 type SectionLayoutProps = {
@@ -16,6 +17,7 @@ export function SectionLayout({
   showBackButton = true,
 }: SectionLayoutProps) {
   useTelegramBackButton(showBackButton);
+  useSwipeBackToHub(showBackButton);
 
   const classes = ['m7-miniapp-root', 'section-layout', className].filter(Boolean).join(' ');
 

@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { getWebApp } from './telegramWebApp';
+import { useGoToHub } from './navigation';
 
 export function useTelegramBackButton(enabled: boolean) {
-  const router = useRouter();
+  const goToHub = useGoToHub();
 
   useEffect(() => {
     const tg = getWebApp();
@@ -18,13 +18,7 @@ export function useTelegramBackButton(enabled: boolean) {
       // ignore ready errors
     }
 
-    const handleClick = () => {
-      if (typeof window !== 'undefined' && window.location.pathname === '/') {
-        return;
-      }
-
-      router.push('/');
-    };
+    const handleClick = () => goToHub();
 
     if (enabled) {
       tg.BackButton.show();
@@ -40,5 +34,5 @@ export function useTelegramBackButton(enabled: boolean) {
         tg.BackButton.hide();
       }
     };
-  }, [enabled, router]);
+  }, [enabled, goToHub]);
 }
