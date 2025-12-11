@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 prisma generate --schema ../../prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",

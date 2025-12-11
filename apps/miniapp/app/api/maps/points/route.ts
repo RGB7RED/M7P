@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import type { MapPoint as PrismaMapPoint } from '@prisma/client';
-
 import { prisma } from '../../../../lib/prisma';
 
 type ListingType = 'dating' | 'market' | 'housing' | 'job';
@@ -27,7 +25,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    const payload: MapPointResponse[] = points.map((p: PrismaMapPoint) => ({
+    const payload: MapPointResponse[] = points.map((p) => ({
       id: p.id,
       listingType: p.listingType as ListingType,
       listingId: p.listingId,
