@@ -3,85 +3,117 @@ import Link from 'next/link';
 import { getCurrentUser } from '../lib/currentUser';
 import { isModeratorUser } from '../lib/moderators';
 
-const sections = [
-  {
-    href: '/dating',
-    title: 'Знакомства',
-    description:
-      'Свайпы и матчи в стиле Tinder: быстрый поиск людей для общения, отношений или деловых контактов.',
-  },
-  {
-    href: '/market',
-    title: 'Маркет',
-    description: 'Объявления о товарах и услугах с фильтрами по категориям, цене и географии.',
-  },
-  {
-    href: '/housing',
-    title: 'Жильё',
-    description: 'Поиск и размещение аренды: районы, сроки, цена, важные условия и фото.',
-  },
-  {
-    href: '/jobs',
-    title: 'Работа',
-    description: 'Вакансии и резюме с фильтрами по городу, формату, опыту и доходу.',
-  },
-];
+type HubSection = {
+  href: string;
+  title: string;
+  description: string;
+  icon?: string;
+  locked?: boolean;
+};
+
+function buildSections(isModerator: boolean): HubSection[] {
+  return [
+    {
+      href: '/profile',
+      title: 'Профиль',
+      description: 'Телеграм-профиль, анкета, настройки',
+      icon: '👤',
+    },
+    {
+      href: '/rules',
+      title: 'Правила и инструкция',
+      description: 'Как работает платформа и правила сервиса',
+      icon: '📜',
+    },
+    {
+      href: '/dating',
+      title: 'Знакомства',
+      description: 'Анкета, лента, матчи, настройки приватности',
+      icon: '💌',
+    },
+    {
+      href: '/market',
+      title: 'Маркет',
+      description: 'Товары и услуги, объявления, поиск по фильтрам',
+      icon: '🛍️',
+    },
+    {
+      href: '/housing',
+      title: 'Жильё',
+      description: 'Аренда жилья, соседи, объявления по городам',
+      icon: '🏡',
+    },
+    {
+      href: '/jobs',
+      title: 'Работа',
+      description: 'Вакансии и резюме, поиск работы и сотрудников',
+      icon: '💼',
+    },
+    {
+      href: '/maps',
+      title: 'Карты',
+      description: 'Объявления на карте (знакомства, маркет, жильё, работа)',
+      icon: '🗺️',
+    },
+    {
+      href: '/moderation/dating',
+      title: 'Модерация',
+      description: isModerator
+        ? 'Панель модератора по жалобам и объявлениям'
+        : 'Доступно модераторам — нужен Telegram-логин из списка',
+      icon: '🛡️',
+      locked: !isModerator,
+    },
+  ];
+}
+
+function HubListItem({ section }: { section: HubSection }) {
+  const { icon, title, description, href, locked } = section;
+
+  return (
+    <li>
+      <Link href={href} className="hub-item">
+        <div className="hub-item-icon" aria-hidden>
+          {icon ?? title.charAt(0)}
+        </div>
+        <div className="hub-item-text">
+          <div className="hub-item-title-row">
+            <span className="hub-item-title">{title}</span>
+            {locked ? <span className="hub-item-badge">Только модераторы</span> : null}
+          </div>
+          <p className="hub-item-subtitle">{description}</p>
+        </div>
+        <span className="hub-item-arrow" aria-hidden>
+          ›
+        </span>
+      </Link>
+    </li>
+  );
+}
 
 export default async function HomePage() {
   const currentUser = await getCurrentUser();
   const isModerator = isModeratorUser(currentUser);
+  const sections = buildSections(isModerator);
 
   return (
-    <>
-      <div className="card">
-        <h1 className="card-title">M7 платформа</h1>
-        <p className="card-subtitle">
-          Все ключевые сценарии — знакомства, товары и услуги, аренда жилья и поиск работы — собраны в одном приложении.
-          Авторизация строится вокруг Telegram @username и одноразовых кодов, которые отправляет бот.
+    <div className="hub-layout">
+      <section className="hub-cover">
+        <p className="hub-cover-kicker">Главный экран</p>
+        <h1 className="hub-cover-title">M7 Платформа</h1>
+        <p className="hub-cover-subtitle">
+          Платформа знакомств, товаров и услуг, жилья и работы внутри Telegram. Сейчас идёт внутренняя разработка MVP.
         </p>
-      </div>
+      </section>
 
-      <div className="card">
-        <h2 className="card-title">Что внутри</h2>
-        <p className="card-subtitle">
-          Минимум переключений: четыре раздела с единым UX, нативная работа внутри Telegram и быстрые уведомления через бота.
-        </p>
-      </div>
-
-      <ul className="section-list">
-        {sections.map((section) => (
-          <li key={section.href}>
-            <Link href={section.href} className="card">
-              <h3 className="card-title" style={{ fontSize: 18 }}>
-                {section.title}
-              </h3>
-              <p className="card-subtitle">{section.description}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {isModerator ? (
-        <div className="card">
-          <h2 className="card-title">Модерация</h2>
-          <p className="card-subtitle">
-            Раздел только для модераторов. Чтобы увидеть блок локально, добавьте свой Telegram username в
-            переменную окружения MODERATOR_USERNAMES.
-          </p>
-          <div className="action-buttons">
-            <Link className="btn-primary" href="/moderation/dating">
-              Жалобы по знакомствам
-            </Link>
-            <Link className="btn-primary" href="/moderation/listings">
-              Модерация объявлений
-            </Link>
-          </div>
-        </div>
-      ) : null}
-
-      <p className="footer-note">
-        Бот отвечает за выдачу кодов, уведомления и быстрый возврат в Mini App. Дальнейшая логика подключится на следующих этапах.
-      </p>
-    </>
+      <section className="hub-list-block">
+        <h2 className="hub-section-title">Разделы</h2>
+        <ul className="hub-list" aria-label="Разделы платформы">
+          {sections.map((section) => (
+            <HubListItem key={section.href} section={section} />
+          ))}
+        </ul>
+      </section>
+    </div>
   );
 }
