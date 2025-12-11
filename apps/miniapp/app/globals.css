@@ -66,10 +66,19 @@ a {
   text-decoration: none;
 }
 
-main {
+.miniapp-root {
   max-width: 760px;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top, 0px)) 16px calc(32px + env(safe-area-inset-bottom, 0px));
+  padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@supports not (padding: max(0px)) {
+  .miniapp-root {
+    padding-top: 24px;
+  }
 }
 
 .section-layout {
