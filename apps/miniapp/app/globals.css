@@ -1,37 +1,44 @@
 :root {
-  /* Базовые фоны */
-  --bg-app: #0f172a;
-  --bg-app-soft: #111827;
+  /* Общий фон приложения */
+  --bg: #e5e7eb; /* светло-серый с лёгким синим оттенком */
 
-  /* Поверхности / карточки */
-  --surface-card: #ffffff;
-  --surface-card-subtle: #f5f5f7;
-  --surface-elevated: #111827;
+  /* Панели и карточки */
+  --panel: #f9fafb; /* светлая панель */
+  --panel-elevated: #ffffff;
 
   /* Текст */
-  --text-primary: #0b1020;
-  --text-secondary: #6b7280;
+  --text: #111827; /* почти чёрный */
+  --muted: #6b7280; /* приглушённый серый для вторичного текста */
+
+  /* Бордеры */
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --border-strong: rgba(15, 23, 42, 0.12);
+
+  /* Акцент */
+  --accent: #2563eb; /* насыщенный синий */
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --accent-strong: #1d4ed8;
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --shadow-strong: 0 18px 38px rgba(15, 23, 42, 0.12);
+
+  /* Совместимость со старыми токенами */
+  --bg-app: var(--bg);
+  --bg-app-soft: rgba(229, 231, 235, 0.95);
+  --surface-card: var(--panel);
+  --surface-card-subtle: var(--panel);
+  --surface-elevated: var(--panel-elevated);
+  --text-primary: var(--text);
+  --text-secondary: var(--muted);
   --text-on-dark: #e5e7eb;
-  --text-muted-dark: #9ca3af;
+  --text-muted-dark: var(--muted);
+  --radius-card: var(--radius-lg);
+  --radius-control: var(--radius-pill);
 
-  /* Акцент и состояния */
-  --accent: #2563eb;
-  --accent-soft: #dbeafe;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --success: #10b981;
-
-  /* Бордеры и разделители */
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.16);
-
-  /* Тени и скругления */
-  --radius-card: 16px;
-  --radius-control: 999px;
-  --shadow-soft: 0 14px 30px rgba(15, 23, 42, 0.16);
-  --shadow-strong: 0 18px 40px rgba(15, 23, 42, 0.28);
-
-  /* Прочее */
   --transition-fast: 150ms ease-out;
   --transition-normal: 220ms ease-out;
 }
@@ -43,13 +50,13 @@
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-app);
-  color: var(--text-on-dark);
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
 }
 
 html {
-  background: var(--bg-app);
+  background: var(--bg);
 }
 
 a {
@@ -66,14 +73,14 @@ main {
 .header {
   position: sticky;
   top: 0;
-  backdrop-filter: blur(6px);
-  background: var(--bg-app-soft);
+  backdrop-filter: blur(18px);
+  background: rgba(243, 244, 246, 0.96);
   border-bottom: 1px solid var(--border-subtle);
   padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
   z-index: 10;
 }
 
@@ -84,19 +91,19 @@ main {
 }
 
 .subtitle {
-  color: var(--text-muted-dark);
+  color: var(--muted);
   font-size: 13px;
 }
 
 .card {
-  background: var(--surface-card);
-  border-radius: var(--radius-card);
+  background: var(--panel);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-subtle);
   padding: 20px 24px;
   margin-bottom: 16px;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .card:hover {
@@ -105,14 +112,14 @@ main {
 }
 
 .card-muted {
-  background: var(--surface-card-subtle);
+  background: var(--panel);
 }
 
 .card-title,
 .hero-title {
   font-size: 22px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0 0 8px;
 }
 
@@ -120,7 +127,7 @@ main {
 .hero-text,
 .subtitle-text {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--muted);
   margin: 0;
   line-height: 1.6;
 }
@@ -140,8 +147,8 @@ main {
 .section-list li > a,
 .section-list li > div {
   display: block;
-  background: var(--surface-card);
-  border-radius: var(--radius-card);
+  background: var(--panel);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   padding: 18px 20px;
   box-shadow: var(--shadow-soft);
@@ -156,18 +163,18 @@ main {
 
 .section-list h3 {
   margin: 0 0 6px;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .section-list p {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--muted);
   font-size: 14px;
 }
 
 .footer-note {
   margin-top: 18px;
-  color: var(--text-muted-dark);
+  color: var(--muted);
   font-size: 13px;
   text-align: center;
 }
@@ -184,7 +191,7 @@ main {
 
 .input-label {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--muted);
   display: block;
 }
 
@@ -192,11 +199,11 @@ main {
 textarea,
 select {
   width: 100%;
-  background: var(--surface-card);
+  background: var(--panel);
   border-radius: 12px;
   border: 1px solid var(--border-subtle);
   padding: 10px 14px;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 16px;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
@@ -204,7 +211,7 @@ select {
 .input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 
 .input:focus,
@@ -224,9 +231,9 @@ select:focus {
   padding: 10px 12px;
   border-radius: 12px;
   font-size: 14px;
-  background: var(--surface-card-subtle);
+  background: var(--panel);
   border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .hint.success {
@@ -249,12 +256,12 @@ select:focus {
 
 .btn-primary,
 .primary-btn {
-  background: var(--accent);
-  color: #ffffff;
-  border-radius: var(--radius-control);
+  background: #e0edff;
+  color: var(--accent-strong);
+  border-radius: var(--radius-pill);
   padding: 12px 20px;
   font-weight: 600;
-  border: none;
+  border: 1px solid var(--accent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -265,7 +272,7 @@ select:focus {
 
 .btn-primary:hover,
 .primary-btn:hover {
-  background: #1d4ed8;
+  background: rgba(37, 99, 235, 0.12);
   box-shadow: var(--shadow-soft);
   transform: translateY(-1px);
 }
@@ -277,10 +284,10 @@ select:focus {
 }
 
 .btn-secondary {
-  background: var(--surface-card);
-  color: var(--text-primary);
-  border-radius: var(--radius-control);
-  border: 1px solid var(--border-strong);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
   padding: 10px 18px;
   font-weight: 500;
   cursor: pointer;
@@ -288,7 +295,7 @@ select:focus {
 }
 
 .btn-secondary:hover {
-  background: var(--surface-card-subtle);
+  background: rgba(229, 231, 235, 0.6);
   border-color: var(--accent);
   transform: translateY(-1px);
 }
@@ -296,8 +303,8 @@ select:focus {
 .btn-ghost,
 .ghost-btn {
   background: transparent;
-  color: var(--text-primary);
-  border-radius: var(--radius-control);
+  color: var(--text);
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border-strong);
   padding: 10px 14px;
   cursor: pointer;
@@ -307,15 +314,15 @@ select:focus {
 .btn-ghost:hover,
 .ghost-btn:hover {
   border-color: var(--accent);
-  background: rgba(37, 99, 235, 0.08);
+  background: var(--accent-soft);
 }
 
 .tabs {
   position: sticky;
   bottom: 0;
   padding: 12px 16px 18px;
-  background: var(--bg-app-soft);
-  backdrop-filter: blur(10px);
+  background: rgba(243, 244, 246, 0.98);
+  backdrop-filter: blur(18px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
@@ -326,7 +333,7 @@ select:focus {
   text-align: center;
   padding: 10px 8px;
   border-radius: 12px;
-  color: var(--text-muted-dark);
+  color: var(--muted);
   font-weight: 600;
   font-size: 13px;
   border: 1px solid transparent;
@@ -334,10 +341,10 @@ select:focus {
 }
 
 .tab-active {
-  background: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
-  border-color: var(--accent);
-  box-shadow: inset 0 -2px 0 var(--accent);
+  background: #111827;
+  color: #e5e7eb;
+  border-color: transparent;
+  border-radius: var(--radius-pill);
 }
 
 .grid {
@@ -350,14 +357,14 @@ select:focus {
 }
 
 .profile-card {
-  background: var(--surface-card);
+  background: var(--panel);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   padding: 18px;
   display: grid;
   gap: 12px;
   box-shadow: var(--shadow-soft);
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .profile-card-compact {
@@ -374,18 +381,18 @@ select:focus {
 .profile-title {
   font-weight: 700;
   font-size: 18px;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .profile-subtitle {
-  color: var(--text-secondary);
+  color: var(--muted);
   font-size: 13px;
 }
 
 .profile-section .label,
 .label {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--muted);
   margin-bottom: 4px;
 }
 
@@ -397,9 +404,9 @@ select:focus {
 
 .badge {
   background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  border-radius: var(--radius-control);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
   padding: 6px 10px;
   font-size: 13px;
   font-weight: 600;
@@ -408,8 +415,8 @@ select:focus {
 .pill,
 .chip {
   background: #f3f4f6;
-  color: var(--text-primary);
-  border-radius: var(--radius-control);
+  color: var(--text);
+  border-radius: var(--radius-pill);
   padding: 6px 10px;
   font-size: 12px;
   border: 1px solid transparent;
@@ -423,15 +430,15 @@ select:focus {
 }
 
 .pill-muted {
-  color: var(--text-secondary);
+  color: var(--muted);
   background: #eceff3;
 }
 
 .chip-active,
 .pill-active {
   background: var(--accent-soft);
-  color: var(--accent);
-  border-color: rgba(37, 99, 235, 0.5);
+  color: var(--accent-strong);
+  border-color: var(--accent);
 }
 
 .card-actions {
@@ -479,14 +486,14 @@ select:focus {
   gap: 8px;
   align-items: center;
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .card-section {
   display: grid;
   gap: 8px;
   padding: 12px;
-  background: var(--surface-card-subtle);
+  background: var(--panel);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
 }
@@ -509,18 +516,18 @@ select:focus {
   align-items: flex-start;
   padding: 10px;
   border-radius: 10px;
-  background: var(--surface-card);
+  background: var(--panel);
   border: 1px solid var(--border-subtle);
 }
 
 .purpose-title {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 14px;
 }
 
 .purpose-description {
-  color: var(--text-secondary);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -567,7 +574,7 @@ select:focus {
 }
 
 .muted {
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 
 .matches-list {
@@ -579,14 +586,14 @@ select:focus {
   padding: 12px;
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  background: var(--surface-card-subtle);
+  background: var(--panel);
   display: grid;
   gap: 8px;
 }
 
 .match-title {
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .catalog-grid {
@@ -595,7 +602,7 @@ select:focus {
 }
 
 .links-grid .pill {
-  background: var(--surface-card-subtle);
+  background: rgba(229, 231, 235, 0.7);
 }
 
 .tabs + main {
@@ -606,7 +613,7 @@ select:focus {
   display: inline-flex;
   align-items: center;
   padding: 6px 10px;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
   gap: 6px;
@@ -615,7 +622,7 @@ select:focus {
 
 .status-new {
   background: #f3f4f6;
-  color: var(--text-primary);
+  color: var(--text);
   border-color: var(--border-subtle);
 }
 
@@ -646,9 +653,9 @@ select:focus {
 .filter-bar {
   display: grid;
   gap: 12px;
-  background: var(--surface-card);
+  background: var(--panel);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
   padding: 16px 18px;
 }
