@@ -1,9 +1,11 @@
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
 import { SectionLayout } from '../components/SectionLayout';
+import { TelegramBackToRoot } from '../components/TelegramBackToRoot';
 
 export default function MapsPage() {
   return (
     <SectionLayout>
+      <TelegramBackToRoot />
       <SectionHeaderCard
         title="Карты"
         subtitle="Раздел в разработке: здесь будут отображаться объявления и люди на карте города."

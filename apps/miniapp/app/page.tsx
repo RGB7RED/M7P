@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { getCurrentUser } from '../lib/currentUser';
 import { isModeratorUser } from '../lib/moderators';
+import { TelegramBackButtonReset } from './components/TelegramBackButtonReset';
 
 type HubSection = {
   href: string;
@@ -86,6 +87,7 @@ export default async function HomePage() {
 
   return (
     <div className="hub-layout">
+      <TelegramBackButtonReset />
       <section className="hub-cover">
         <p className="hub-cover-kicker">Главный экран</p>
         <h1 className="hub-cover-title">M7 платформа</h1>

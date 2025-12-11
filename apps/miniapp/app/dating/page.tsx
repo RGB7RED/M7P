@@ -8,6 +8,7 @@ import {
   DATING_PURPOSES,
   DatingPurpose,
 } from '../../lib/datingPurposes';
+import { useTelegramBackToRoot } from '../../lib/useTelegramBackToRoot';
 import { ListingPreview, ListingPreviewGroups } from './types';
 import { ListingPreviewCard } from './components/ListingPreviewCard';
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
@@ -412,6 +413,7 @@ function ProfileForm({
 
 export default function DatingPage() {
   const router = useRouter();
+  useTelegramBackToRoot();
   const [profile, setProfile] = useState<DatingProfile | null>(null);
   const [profileListings, setProfileListings] = useState<ListingPreviewGroups>(EMPTY_LISTINGS);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
