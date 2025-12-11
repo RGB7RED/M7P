@@ -23,6 +23,9 @@ type HousingListing = {
   available_from: string | null;
   min_term_months: number | null;
   is_roommate_allowed: boolean;
+  show_on_map: boolean;
+  map_lat: number | null;
+  map_lng: number | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -76,12 +79,40 @@ function validatePayload(body: Record<string, unknown>) {
   const status = normalizeStatus((body.status as string | null) ?? 'active');
   const available_from = body.available_from ? String(body.available_from) : null;
   const is_roommate_allowed = body.is_roommate_allowed !== undefined ? Boolean(body.is_roommate_allowed) : true;
+  const show_on_map = Boolean(body.show_on_map);
 
   const priceRaw = body.price_per_month !== undefined && body.price_per_month !== null ? Number(body.price_per_month) : NaN;
   const price_per_month = Number.isFinite(priceRaw) ? priceRaw : null;
 
   const minTermRaw = body.min_term_months !== undefined && body.min_term_months !== null ? Number(body.min_term_months) : NaN;
   const min_term_months = Number.isFinite(minTermRaw) ? Math.max(0, Math.floor(minTermRaw)) : null;
+
+  let map_lat: number | null = null;
+  let map_lng: number | null = null;
+
+  if (show_on_map) {
+    const mapLatNumber = Number(body.map_lat);
+    const mapLngNumber = Number(body.map_lng);
+
+    if (!Number.isFinite(mapLatNumber) || mapLatNumber < -90 || mapLatNumber > 90) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную широту в диапазоне -90..90.',
+      };
+    }
+
+    if (!Number.isFinite(mapLngNumber) || mapLngNumber < -180 || mapLngNumber > 180) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную долготу в диапазоне -180..180.',
+      };
+    }
+
+    map_lat = mapLatNumber;
+    map_lng = mapLngNumber;
+  }
 
   if (!title || !offer_type || !property_type || !city || price_per_month === null) {
     return {
@@ -105,6 +136,9 @@ function validatePayload(body: Record<string, unknown>) {
       available_from,
       min_term_months,
       is_roommate_allowed,
+      show_on_map,
+      map_lat,
+      map_lng,
       status,
     },
   };
