@@ -30,8 +30,11 @@ type JobListing = {
 };
 
 function parsePagination(url: URL) {
-  const limitRaw = Number(url.searchParams.get('limit'));
-  const offsetRaw = Number(url.searchParams.get('offset'));
+  const limitParam = url.searchParams.get('limit');
+  const offsetParam = url.searchParams.get('offset');
+
+  const limitRaw = limitParam !== null ? Number(limitParam) : NaN;
+  const offsetRaw = offsetParam !== null ? Number(offsetParam) : NaN;
   const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 200) : 200;
   const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? Math.floor(offsetRaw) : 0;
   return { limit, offset };
