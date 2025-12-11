@@ -203,6 +203,8 @@ export function ModerationDatingClient() {
         </form>
       </div>
 
+      </div>
+
       {error ? (
         <div className="hint error" role="alert">
           {error}
