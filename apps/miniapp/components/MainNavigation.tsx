@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const tabs = [
+const navigation = [
   { href: '/', label: 'Главная' },
   { href: '/dating', label: 'Знакомства' },
   { href: '/market', label: 'Маркет' },
@@ -11,21 +11,22 @@ const tabs = [
   { href: '/jobs', label: 'Работа' },
 ];
 
-export function MainTabs() {
+export function MainNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="tabs" aria-label="Основная навигация">
-      {tabs.map((tab) => {
-        const isActive = tab.href === '/' ? pathname === '/' : pathname?.startsWith(tab.href);
+    <nav className="main-nav" aria-label="Основная навигация">
+      {navigation.map((item) => {
+        const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href);
+
         return (
           <Link
-            key={tab.href}
-            href={tab.href}
-            className={`tab ${isActive ? 'tab-active' : ''}`}
+            key={item.href}
+            href={item.href}
+            className={`main-nav__link ${isActive ? 'main-nav__link--active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
           >
-            {tab.label}
+            {item.label}
           </Link>
         );
       })}
