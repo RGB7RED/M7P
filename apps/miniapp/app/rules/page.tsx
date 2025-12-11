@@ -1,9 +1,11 @@
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
 import { SectionLayout } from '../components/SectionLayout';
+import { TelegramBackToRoot } from '../components/TelegramBackToRoot';
 
 export default function RulesPage() {
   return (
     <SectionLayout>
+      <TelegramBackToRoot />
       <SectionHeaderCard
         title="Правила и инструкция"
         subtitle="Базовые правила использования платформы, подсказки по публикации объявлений и рекомендации по безопасности."

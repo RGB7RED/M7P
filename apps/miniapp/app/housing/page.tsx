@@ -6,6 +6,7 @@ import { ListingContactActions } from '../_components/ListingContactActions';
 import { ListingReportButton } from '../_components/ListingReportButton';
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
 import { SectionLayout } from '../components/SectionLayout';
+import { useTelegramBackToRoot } from '../../lib/useTelegramBackToRoot';
 
 const STATUS_OPTIONS = ['active', 'draft', 'archived'] as const;
 
@@ -114,6 +115,7 @@ function ListingCard({
 export default function HousingPage() {
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get('mine') ? 'mine' : 'feed';
+  useTelegramBackToRoot();
   const [activeTab, setActiveTab] = useState<'feed' | 'mine' | 'form'>(defaultTab);
   const [form, setForm] = useState<SavePayload>(emptyForm);
   const [feedFilter, setFeedFilter] = useState<FilterState>({ city: '', maxPrice: '', offer_type: '', property_type: '' });

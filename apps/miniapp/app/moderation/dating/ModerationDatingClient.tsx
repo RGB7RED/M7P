@@ -6,6 +6,7 @@ import type { DatingReportReason } from '../../api/dating/_helpers/reports';
 import type { DatingModerationStats } from '../../api/moderation/dating/_helpers/stats';
 import { SectionHeaderCard } from '../../components/SectionHeaderCard';
 import { SectionLayout } from '../../components/SectionLayout';
+import { useTelegramBackToRoot } from '../../../lib/useTelegramBackToRoot';
 
 export type ModerationReport = {
   id: string;
@@ -43,6 +44,7 @@ type FetchResponse = {
 };
 
 export function ModerationDatingClient() {
+  useTelegramBackToRoot();
   const [filters, setFilters] = useState<Filters>({ status: 'all', reason: '', target: '' });
   const [reports, setReports] = useState<ModerationReport[]>([]);
   const [stats, setStats] = useState<DatingModerationStats | null>(null);

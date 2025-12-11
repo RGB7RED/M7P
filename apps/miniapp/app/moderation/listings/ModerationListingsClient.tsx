@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { SectionHeaderCard } from '../../components/SectionHeaderCard';
 import { SectionLayout } from '../../components/SectionLayout';
+import { useTelegramBackToRoot } from '../../../lib/useTelegramBackToRoot';
 
 type Section = 'market' | 'housing' | 'jobs';
 
@@ -49,6 +50,7 @@ const FILTER_SECTION_OPTIONS: { value: '' | Section; label: string }[] = [
 ];
 
 export function ModerationListingsClient() {
+  useTelegramBackToRoot();
   const [filters, setFilters] = useState<{ status: 'all' | 'new' | 'in_review' | 'resolved'; section: '' | Section }>({
     status: 'all',
     section: '',
