@@ -86,7 +86,7 @@ export default async function HomePage() {
   const sections = buildSections(isModerator);
 
   return (
-    <main className="m7-miniapp-root">
+    <main className="m7-miniapp-root hub-page">
       <TelegramBackButtonReset />
       <div className="hub-layout">
         <section className="hub-cover">

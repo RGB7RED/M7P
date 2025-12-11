@@ -84,6 +84,10 @@ a {
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
+.hub-page {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
+}
+
 .section-layout {
   width: 100%;
   max-width: 720px;
