@@ -177,7 +177,7 @@
 ## Схема данных: знакомства (Supabase/Postgres)
 - SQL-скрипт: `docs/db/004_dating_schema.sql`.
 - Основные объекты:
-- `dating_profiles` — анкета пользователя с целями знакомств (`purposes`), текстовыми полями («что ищу», «что предлагаю», комментарий), ссылками на другие разделы (market/housing/jobs), массивом фото `photo_urls` и признаком `has_photo`. Поддерживает флаги видимости (`show_listings`, `is_active`) и дату актуальности `last_activated_at` (анкету нужно обновлять раз в 90 дней).
+- `dating_profiles` — анкета пользователя с целями знакомств (`purposes`), текстовыми полями («что ищу», «что предлагаю», комментарий), ссылками на другие разделы (market/housing/jobs), массивом фото `photo_urls` и признаком `has_photo`. Поддерживает флаги видимости (`show_listings`, `is_active`) и дату актуальности `last_activated_at` (анкету нужно обновлять раз в 90 дней). Добавлены предпочтения для подбора (пол партнёров `preferred_genders`, возрастной диапазон `preferred_age_min`/`preferred_age_max`, режим города `preferred_city_mode`) и детализация показа объявлений по разделам (`show_market_listings_in_profile`, `show_housing_listings_in_profile`, `show_job_listings_in_profile`).
   - `dating_swipes` — решения пользователя по чужим анкетам (`decision: like|dislike`), уникальность по паре `(from_user_id, to_profile_id)`.
   - `dating_matches` — взаимные лайки. Пара пользователей хранится в отсортированном виде, уникальность обеспечивается индексом `uniq_dating_matches_pair`.
   - Enum `dating_purpose` фиксирует цели: romantic, friends, co_rent, rent_tenant, rent_landlord, market_seller, market_buyer, job_employer, job_seeker, job_buddy.
@@ -208,11 +208,13 @@
 - Все таблицы содержат `status` с базовыми значениями draft/active/archived и обновляются по `updated_at` через триггер.
 - Таблица `listing_contact_purchases` (`docs/db/009_listing_contact_purchases.sql`) фиксирует покупку контакта владельца объявления (`section`, `listing_id`, `buyer_user_id`) с фиксированной ценой 50 ₽ (5000 копеек). Миграцию нужно выполнить в Supabase вместе с базовыми таблицами объявлений.
 
-## API Mini App: знакомства
-Реализованы в `apps/miniapp/app/api/dating/*` (работают при наличии сессионной куки `m7_session`).
-- `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null`.
-- `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offer`, минимум один `purposes`. При включённой анкете (`is_active = true`) обновляется `last_activated_at` для 90‑дневной актуальности. Поддерживаются флаги `show_listings` и `is_active`.
-- `GET /api/dating/feed` — лента активных анкет без уже просмотренных/свайпнутых. Параметры: `limit` (<=50), `purposes` (фильтр по пересечению целей, можно перечислять через запятую). В ленту попадают только анкеты с `is_active=true` и `last_activated_at` не старше 90 дней.
+## API Mini App: профиль и знакомства
+Реализованы в `apps/miniapp/app/api/*` (работают при наличии сессионной куки `m7_session`).
+- `GET /api/profile` — базовый профиль пользователя (`gender`, `birthDate`, `city`, `about`, `isAdultProfile`) и статистика по анкетам/объявлениям.
+- `PUT /api/profile` — частичное обновление базового профиля с валидацией возраста (14–120 лет, флаг 18+ только после 18 лет).
+- `GET /api/dating/profile` — вернуть анкету текущего пользователя или `null` (собирает данные анкеты и базового профиля).
+- `PUT /api/dating/profile` — создать/обновить анкету. Валидация: непустые `nickname`, `looking_for`, `offer`, минимум один `purposes`; при включённой анкете (`is_active = true`) требуется заполненный базовый профиль. Добавлены предпочтения `preferred_genders`, возрастной диапазон и режим города, а также флаги показа объявлений по разделам.
+- `GET /api/dating/feed` — лента активных анкет без уже просмотренных/свайпнутых. Параметры: `limit` (<=50), `purposes` (фильтр по пересечению целей, можно перечислять через запятую). Выбирает только анкеты с `is_active=true`, актуальные за 90 дней, подходящие по полу, возрасту, городу (для `same_city`) и возрастным ограничениям 18+/до 18.
 - `POST /api/dating/swipe` — лайк/дизлайк анкеты. При обоюдном лайке создаётся запись в `dating_matches`.
 - `GET /api/dating/matches` — список матчей текущего пользователя с данными другого профиля и ссылкой на Telegram.
 
@@ -258,6 +260,11 @@
   - Описана общая концепция продукта (знакомства, товары/услуги, жильё, работа), география, ЦА и возрастные ограничения.
   - Зафиксирована схема авторизации через Telegram-бота (username + код) и роль бота (авторизация, уведомления, быстрые действия).
   - Обозначен черновой технологический стек (Next.js, Node.js, Postgres/Supabase, Prisma, Telegram Bot API) и список переменных окружения.
+
+### Профиль и предпочтения знакомств (дата: 2025-12-10)
+- **Файлы**: `docs/db/014_user_profile_core.sql`, `docs/db/015_dating_preferences_and_listings_flags.sql`, `apps/miniapp/app/api/profile/route.ts`, `apps/miniapp/app/api/dating/profile/route.ts`, `apps/miniapp/app/api/dating/feed/route.ts`, `apps/miniapp/app/profile/page.tsx`, `apps/miniapp/app/dating/page.tsx`, `README.md`.
+- **Изменения**: добавлена единая модель профиля пользователя (`gender`, `birth_date`, `city`, `about`, `is_adult_profile`) с API `/api/profile`; анкета знакомств расширена предпочтениями по полу, возрасту и гео, флагами показа объявлений по разделам; лента `/api/dating/feed` фильтрует анкеты по полу, возрасту, городу и логике 18+/minor; Mini App получила страницу `/profile` с вкладками «Основное», «Знакомства», «Мои объявления» и кнопки перехода из раздела знакомств.
+- **Поток данных**: пользователь заполняет базовый профиль на `/profile` → `PUT /api/profile` обновляет таблицу `users` с валидацией возраста → на вкладке «Знакомства» отправляется `PUT /api/dating/profile`, сохраняющий предпочтения в `dating_profiles` и актуализирующий `last_activated_at` → лента `/api/dating/feed` использует пол, возраст, город и предпочтения для фильтрации кандидатов; показы объявлений в анкете зависят от флагов `show_*_listings_in_profile`.
   - Описан архитектурный поток: от открытия Mini App и ввода username → отправки кода ботом → проверки кода backend’ом → работы с разделами и уведомлениями.
 
 ### Инициализация Mini App и базовой SQL-схемы (дата: 2025-12-06)
