@@ -2,8 +2,11 @@ import MapView from '../components/MapView';
 import { SectionHeaderCard } from '../components/SectionHeaderCard';
 import { SectionLayout } from '../components/SectionLayout';
 import { TelegramBackToRoot } from '../components/TelegramBackToRoot';
+import { loadMapPoints } from './mapPoints';
 
-export default function MapsPage() {
+export default async function MapsPage() {
+  const points = await loadMapPoints();
+
   return (
     <SectionLayout>
       <TelegramBackToRoot />
@@ -12,7 +15,7 @@ export default function MapsPage() {
         subtitle="Объявления на карте. В будущем здесь появятся точки со знакомствами, товарами, жильём и работой."
       />
 
-      <MapView />
+      <MapView points={points} />
     </SectionLayout>
   );
 }
