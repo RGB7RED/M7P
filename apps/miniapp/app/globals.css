@@ -76,7 +76,7 @@ a {
   min-height: 100vh;
   box-sizing: border-box;
   /* верхний отступ с учётом safe area под Telegram-header */
-  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+  padding-top: max(calc(env(safe-area-inset-top, 0px) + 28px), 10vh);
 
   /* боковые и нижний отступы в соответствии с макетом */
   padding-left: 16px;
