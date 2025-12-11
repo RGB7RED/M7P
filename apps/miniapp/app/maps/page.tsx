@@ -1,10 +1,13 @@
 export default function MapsPage() {
   return (
-    <div className="card">
+    <section className="card">
       <h1 className="card-title">Карты</h1>
       <p className="card-subtitle">
-        Раздел в разработке. Здесь появится карта объявлений по знакомствам, маркету, жилью и работе.
+        В будущем здесь появятся карты с объявлениями по знакомствам, маркету, жилью и работе.
       </p>
-    </div>
+      <p className="card-footnote">
+        Сейчас раздел находится в разработке и доступен только для внутреннего тестирования.
+      </p>
+    </section>
   );
 }
