@@ -126,7 +126,7 @@ export default function MarketPage() {
 
   const loadFeed = async () => {
     setLoadingFeed(true);
-    const params = new URLSearchParams({ status: 'active' });
+    const params = new URLSearchParams({ status: 'all' });
     if (feedFilter.city.trim()) params.set('city', feedFilter.city.trim());
     if (feedFilter.category.trim()) params.set('category', feedFilter.category.trim());
     if (feedFilter.type.trim()) params.set('type', feedFilter.type.trim());
@@ -147,7 +147,7 @@ export default function MarketPage() {
   const loadMine = async () => {
     setLoadingMine(true);
     try {
-      const response = await fetch('/api/market/listings?mine=true');
+      const response = await fetch('/api/market/listings?mine=true&status=all');
       const data = await response.json();
       if (data?.ok) {
         setMine(data.data ?? []);
