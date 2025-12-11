@@ -19,5 +19,5 @@ export function SectionLayout({
 
   const classes = ['m7-miniapp-root', 'section-layout', className].filter(Boolean).join(' ');
 
-  return <div className={classes}>{children}</div>;
+  return <main className={classes}>{children}</main>;
 }
