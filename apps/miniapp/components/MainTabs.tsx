@@ -6,9 +6,9 @@ import { usePathname } from 'next/navigation';
 const tabs = [
   { href: '/', label: 'Главная' },
   { href: '/dating', label: 'Знакомства' },
-  { href: '/market', label: 'Маркет' },
   { href: '/housing', label: 'Жильё' },
   { href: '/jobs', label: 'Работа' },
+  { href: '/market', label: 'Маркет' },
 ];
 
 export function MainTabs() {
