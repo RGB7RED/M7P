@@ -20,6 +20,9 @@ type MarketListing = {
   currency: string | null;
   city: string | null;
   is_online: boolean;
+  show_on_map: boolean;
+  map_lat: number | null;
+  map_lng: number | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -61,10 +64,38 @@ function validatePayload(body: Record<string, unknown>) {
   const city = body.city !== undefined ? String(body.city ?? '').trim() : '';
   const currency = String(body.currency ?? 'RUB').trim() || 'RUB';
   const is_online = Boolean(body.is_online);
+  const show_on_map = Boolean(body.show_on_map);
   const status = normalizeStatus((body.status as string | null) ?? 'active');
 
   const priceNumber = body.price !== undefined && body.price !== null ? Number(body.price) : NaN;
   const price = Number.isFinite(priceNumber) ? priceNumber : null;
+
+  let map_lat: number | null = null;
+  let map_lng: number | null = null;
+
+  if (show_on_map) {
+    const mapLatNumber = Number(body.map_lat);
+    const mapLngNumber = Number(body.map_lng);
+
+    if (!Number.isFinite(mapLatNumber) || mapLatNumber < -90 || mapLatNumber > 90) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную широту в диапазоне -90..90.',
+      };
+    }
+
+    if (!Number.isFinite(mapLngNumber) || mapLngNumber < -180 || mapLngNumber > 180) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную долготу в диапазоне -180..180.',
+      };
+    }
+
+    map_lat = mapLatNumber;
+    map_lng = mapLngNumber;
+  }
 
   if (!title || !category || !type) {
     return { ok: false as const, error: 'VALIDATION_ERROR', details: 'title, category и type обязательны' };
@@ -81,6 +112,9 @@ function validatePayload(body: Record<string, unknown>) {
       currency,
       price,
       is_online,
+      show_on_map,
+      map_lat,
+      map_lng,
       status,
     },
   };

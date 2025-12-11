@@ -23,6 +23,9 @@ type HousingListing = {
   available_from: string | null;
   min_term_months: number | null;
   is_roommate_allowed: boolean;
+  show_on_map: boolean;
+  map_lat: number | null;
+  map_lng: number | null;
   status: string;
   created_at: string;
 };
@@ -40,6 +43,9 @@ type SavePayload = {
   available_from: string;
   min_term_months: string;
   is_roommate_allowed: boolean;
+  show_on_map: boolean;
+  map_lat: string;
+  map_lng: string;
   status: (typeof STATUS_OPTIONS)[number];
 };
 
@@ -62,6 +68,9 @@ const emptyForm: SavePayload = {
   available_from: '',
   min_term_months: '',
   is_roommate_allowed: true,
+  show_on_map: false,
+  map_lat: '',
+  map_lng: '',
   status: 'active',
 };
 
@@ -194,6 +203,32 @@ export default function HousingPage() {
       return;
     }
 
+    let map_lat: number | null = null;
+    let map_lng: number | null = null;
+
+    if (form.show_on_map) {
+      if (!form.map_lat.trim() || !form.map_lng.trim()) {
+        setError('Введите координаты, чтобы объявление появилось на карте.');
+        return;
+      }
+
+      const latNumber = Number(form.map_lat);
+      const lngNumber = Number(form.map_lng);
+
+      if (!Number.isFinite(latNumber) || latNumber < -90 || latNumber > 90) {
+        setError('Укажите корректную широту от -90 до 90.');
+        return;
+      }
+
+      if (!Number.isFinite(lngNumber) || lngNumber < -180 || lngNumber > 180) {
+        setError('Укажите корректную долготу от -180 до 180.');
+        return;
+      }
+
+      map_lat = latNumber;
+      map_lng = lngNumber;
+    }
+
     setIsSubmitting(true);
 
     const payload: any = {
@@ -209,6 +244,9 @@ export default function HousingPage() {
       available_from: form.available_from.trim(),
       min_term_months: null,
       is_roommate_allowed: form.is_roommate_allowed,
+      show_on_map: form.show_on_map,
+      map_lat,
+      map_lng,
       status: form.status,
     };
 
@@ -261,6 +299,9 @@ export default function HousingPage() {
       available_from: item.available_from ?? '',
       min_term_months: item.min_term_months !== null ? String(item.min_term_months) : '',
       is_roommate_allowed: item.is_roommate_allowed,
+      show_on_map: item.show_on_map,
+      map_lat: item.map_lat !== null ? String(item.map_lat) : '',
+      map_lng: item.map_lng !== null ? String(item.map_lng) : '',
       status: (STATUS_OPTIONS.includes(item.status as any) ? item.status : 'active') as (typeof STATUS_OPTIONS)[number],
     });
     setActiveTab('form');
@@ -468,6 +509,44 @@ export default function HousingPage() {
                 placeholder="Что включено, пожелания к жильцам"
               />
             </label>
+
+            <div className="card-subtitle" style={{ marginTop: 8 }}>
+              Настройки карты (временно для внутренней настройки)
+            </div>
+            <label className="checkbox-item">
+              <input
+                type="checkbox"
+                checked={form.show_on_map}
+                onChange={(e) => setForm((prev) => ({ ...prev, show_on_map: e.target.checked }))}
+              />
+              Показывать на карте
+            </label>
+            <div className="links-grid">
+              <label className="input-label" style={{ flex: 1 }}>
+                Широта (lat)
+                <input
+                  className="input"
+                  value={form.map_lat}
+                  onChange={(e) => setForm((prev) => ({ ...prev, map_lat: e.target.value }))}
+                  placeholder="59.93"
+                  inputMode="decimal"
+                  disabled={!form.show_on_map}
+                />
+              </label>
+
+              <label className="input-label" style={{ flex: 1 }}>
+                Долгота (lng)
+                <input
+                  className="input"
+                  value={form.map_lng}
+                  onChange={(e) => setForm((prev) => ({ ...prev, map_lng: e.target.value }))}
+                  placeholder="30.31"
+                  inputMode="decimal"
+                  disabled={!form.show_on_map}
+                />
+              </label>
+            </div>
+            <p className="subtitle">Временно для внутренней настройки. Введите координаты точки, чтобы объявление появилось на карте.</p>
 
             <div className="form-actions">
               <button type="button" className="ghost-btn" onClick={() => setForm({ ...emptyForm })}>

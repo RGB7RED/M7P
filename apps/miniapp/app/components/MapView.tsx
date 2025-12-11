@@ -1,18 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import maplibregl from 'maplibre-gl';
 
-import type { MapPoint } from '../maps/mapPoints';
+import type { MapListingDTO } from '../maps/types';
 
 const INITIAL_CENTER: [number, number] = [30.3, 59.94];
 const INITIAL_ZOOM = 9;
 
 type MapViewProps = {
-  points: MapPoint[];
+  points: MapListingDTO[];
 };
 
-function buildPopupElement(point: MapPoint, onOpenListing?: (point: MapPoint) => void) {
+function buildPopupElement(point: MapListingDTO, onOpenListing?: (point: MapListingDTO) => void) {
   const container = document.createElement('div');
   container.className = 'm7-map-popup';
 
@@ -21,10 +22,10 @@ function buildPopupElement(point: MapPoint, onOpenListing?: (point: MapPoint) =>
   title.textContent = point.title;
   container.appendChild(title);
 
-  if (point.subtitle) {
+  if (point.city) {
     const subtitle = document.createElement('div');
     subtitle.className = 'm7-map-popup-subtitle';
-    subtitle.textContent = point.subtitle;
+    subtitle.textContent = point.city;
     container.appendChild(subtitle);
   }
 
@@ -39,25 +40,11 @@ function buildPopupElement(point: MapPoint, onOpenListing?: (point: MapPoint) =>
   return container;
 }
 
-function buildListingUrl(point: MapPoint) {
-  switch (point.type) {
-    case 'dating':
-      return `/dating?openId=${encodeURIComponent(point.id)}`;
-    case 'market':
-      return `/market?openId=${encodeURIComponent(point.id)}`;
-    case 'housing':
-      return `/housing?openId=${encodeURIComponent(point.id)}`;
-    case 'job':
-      return `/jobs?openId=${encodeURIComponent(point.id)}`;
-    default:
-      return '/';
-  }
-}
-
 export function MapView({ points }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -107,9 +94,10 @@ export function MapView({ points }: MapViewProps) {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    const handleOpenListing = (point: MapPoint) => {
-      const url = buildListingUrl(point);
-      window.location.href = url;
+    const handleOpenListing = (point: MapListingDTO) => {
+      if (point.href) {
+        router.push(point.href);
+      }
     };
 
     points.forEach((point) => {
@@ -120,7 +108,7 @@ export function MapView({ points }: MapViewProps) {
       const popup = new maplibregl.Popup({ closeButton: true }).setDOMContent(popupElement);
 
       const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([point.lng, point.lat])
+        .setLngLat([point.mapLng, point.mapLat])
         .setPopup(popup)
         .addTo(mapRef.current!);
 

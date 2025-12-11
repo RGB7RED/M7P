@@ -21,6 +21,9 @@ type JobListing = {
   salary_to: number | null;
   currency: string | null;
   experience_level: string | null;
+  show_on_map: boolean;
+  map_lat: number | null;
+  map_lng: number | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -63,11 +66,39 @@ function validatePayload(body: Record<string, unknown>) {
   const experience_level = body.experience_level !== undefined ? String(body.experience_level ?? '').trim() : '';
   const currency = String(body.currency ?? 'RUB').trim() || 'RUB';
   const status = normalizeStatus((body.status as string | null) ?? 'active');
+  const show_on_map = Boolean(body.show_on_map);
 
   const salaryFromRaw = body.salary_from !== undefined && body.salary_from !== null ? Number(body.salary_from) : NaN;
   const salaryToRaw = body.salary_to !== undefined && body.salary_to !== null ? Number(body.salary_to) : NaN;
   const salary_from = Number.isFinite(salaryFromRaw) ? salaryFromRaw : null;
   const salary_to = Number.isFinite(salaryToRaw) ? salaryToRaw : null;
+
+  let map_lat: number | null = null;
+  let map_lng: number | null = null;
+
+  if (show_on_map) {
+    const mapLatNumber = Number(body.map_lat);
+    const mapLngNumber = Number(body.map_lng);
+
+    if (!Number.isFinite(mapLatNumber) || mapLatNumber < -90 || mapLatNumber > 90) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную широту в диапазоне -90..90.',
+      };
+    }
+
+    if (!Number.isFinite(mapLngNumber) || mapLngNumber < -180 || mapLngNumber > 180) {
+      return {
+        ok: false as const,
+        error: 'VALIDATION_ERROR',
+        details: 'Укажите корректную долготу в диапазоне -180..180.',
+      };
+    }
+
+    map_lat = mapLatNumber;
+    map_lng = mapLngNumber;
+  }
 
   if (!title || !role_type) {
     return { ok: false as const, error: 'VALIDATION_ERROR', details: 'title и role_type обязательны' };
@@ -85,6 +116,9 @@ function validatePayload(body: Record<string, unknown>) {
       salary_to,
       currency,
       experience_level: experience_level || null,
+      show_on_map,
+      map_lat,
+      map_lng,
       status,
     },
   };
