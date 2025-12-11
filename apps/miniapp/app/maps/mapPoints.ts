@@ -62,26 +62,26 @@ async function loadDatingPoints(): Promise<MapPoint[]> {
       return [];
     }
 
-    return (data ?? [])
-      .map((profile) => {
-        const coords = extractCoords({
-          lat: (profile as any).lat,
-          lng: (profile as any).lng,
-          city: (profile as any).city,
-        });
+    return (data ?? []).flatMap((profile) => {
+      const coords = extractCoords({
+        lat: (profile as any).lat,
+        lng: (profile as any).lng,
+        city: (profile as any).city,
+      });
 
-        if (!coords) return null;
+      if (!coords) return [];
 
-        return {
+      return [
+        {
           id: profile.id,
           type: 'dating' as const,
           title: (profile as any).nickname ?? 'Анкета',
           subtitle: (profile as any).city ?? undefined,
           lat: coords.lat,
           lng: coords.lng,
-        } satisfies MapPoint;
-      })
-      .filter((point): point is MapPoint => Boolean(point));
+        } satisfies MapPoint,
+      ];
+    });
   } catch (error) {
     console.error('[maps] unexpected dating lookup error', error);
     return [];
@@ -104,21 +104,21 @@ async function loadMarketPoints(): Promise<MapPoint[]> {
       return [];
     }
 
-    return (data ?? [])
-      .map((listing) => {
-        const coords = extractCoords(listing as any);
-        if (!coords) return null;
+    return (data ?? []).flatMap((listing) => {
+      const coords = extractCoords(listing as any);
+      if (!coords) return [];
 
-        return {
+      return [
+        {
           id: listing.id,
           type: 'market' as const,
           title: listing.title,
           subtitle: listing.city ?? undefined,
           lat: coords.lat,
           lng: coords.lng,
-        } satisfies MapPoint;
-      })
-      .filter((point): point is MapPoint => Boolean(point));
+        } satisfies MapPoint,
+      ];
+    });
   } catch (error) {
     console.error('[maps] unexpected market lookup error', error);
     return [];
@@ -141,23 +141,23 @@ async function loadHousingPoints(): Promise<MapPoint[]> {
       return [];
     }
 
-    return (data ?? [])
-      .map((listing) => {
-        const coords = extractCoords(listing as any);
-        if (!coords) return null;
+    return (data ?? []).flatMap((listing) => {
+      const coords = extractCoords(listing as any);
+      if (!coords) return [];
 
-        const subtitle = listing.city ?? listing.district ?? undefined;
+      const subtitle = listing.city ?? listing.district ?? undefined;
 
-        return {
+      return [
+        {
           id: listing.id,
           type: 'housing' as const,
           title: listing.title,
           subtitle,
           lat: coords.lat,
           lng: coords.lng,
-        } satisfies MapPoint;
-      })
-      .filter((point): point is MapPoint => Boolean(point));
+        } satisfies MapPoint,
+      ];
+    });
   } catch (error) {
     console.error('[maps] unexpected housing lookup error', error);
     return [];
@@ -180,21 +180,21 @@ async function loadJobPoints(): Promise<MapPoint[]> {
       return [];
     }
 
-    return (data ?? [])
-      .map((listing) => {
-        const coords = extractCoords(listing as any);
-        if (!coords) return null;
+    return (data ?? []).flatMap((listing) => {
+      const coords = extractCoords(listing as any);
+      if (!coords) return [];
 
-        return {
+      return [
+        {
           id: listing.id,
           type: 'job' as const,
           title: listing.title,
           subtitle: listing.city ?? undefined,
           lat: coords.lat,
           lng: coords.lng,
-        } satisfies MapPoint;
-      })
-      .filter((point): point is MapPoint => Boolean(point));
+        } satisfies MapPoint,
+      ];
+    });
   } catch (error) {
     console.error('[maps] unexpected jobs lookup error', error);
     return [];
