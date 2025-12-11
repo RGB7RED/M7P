@@ -70,6 +70,134 @@ main {
   padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
+.hub-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.hub-cover {
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border-radius: 22px;
+  padding: 22px 22px 24px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-strong);
+  display: grid;
+  gap: 10px;
+}
+
+.hub-cover-kicker {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.hub-cover-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.hub-cover-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.hub-list-block {
+  display: grid;
+  gap: 12px;
+}
+
+.hub-section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.hub-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.hub-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.hub-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-strong);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.hub-item-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #e5edff;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.hub-item-text {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.hub-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-item-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.hub-item-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hub-item-badge {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--accent-strong);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  font-weight: 700;
+}
+
+.hub-item-arrow {
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 700;
+}
+
 .header {
   position: sticky;
   top: 0;
