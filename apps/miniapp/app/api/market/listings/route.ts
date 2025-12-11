@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 const ALLOWED_STATUS = ['draft', 'active', 'archived'] as const;
 
 type AllowedStatus = (typeof ALLOWED_STATUS)[number];
+type ParsedStatus = AllowedStatus | 'all';
 
 type MarketListing = {
   id: string;
@@ -36,11 +37,12 @@ function parsePagination(url: URL) {
   return { limit, offset };
 }
 
-function normalizeStatus(status: string | null): AllowedStatus {
-  if (!status || !ALLOWED_STATUS.includes(status as AllowedStatus)) {
-    return 'active';
+function normalizeStatus(status: string | null): ParsedStatus {
+  if (status === 'all') return 'all';
+  if (status && ALLOWED_STATUS.includes(status as AllowedStatus)) {
+    return status as AllowedStatus;
   }
-  return status as AllowedStatus;
+  return 'all';
 }
 
 function buildFilters(url: URL) {
@@ -129,12 +131,11 @@ export async function GET(req: Request) {
 
     const end = offset + limit - 1;
 
-    let query = supabase
-      .from('market_listings')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false })
-      .range(offset, end);
+    let query = supabase.from('market_listings').select('*').order('created_at', { ascending: false }).range(offset, end);
+
+    if (status !== 'all') {
+      query = query.eq('status', status);
+    }
 
     if (mine) {
       const currentUser = await getCurrentUser();
