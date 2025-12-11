@@ -67,25 +67,21 @@ a {
 }
 
 .miniapp-root {
+  width: 100%;
   max-width: 760px;
   margin: 0 auto;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  padding-left: 16px;
-  padding-right: 16px;
 }
 
-@supports not (padding: max(0px)) {
-  .miniapp-root {
-    padding-top: 24px;
-  }
+.m7-miniapp-root {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .section-layout {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 12px 0 24px;
   display: grid;
   gap: 18px;
 }

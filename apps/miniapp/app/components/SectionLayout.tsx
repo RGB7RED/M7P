@@ -2,12 +2,22 @@
 
 import type { ReactNode } from 'react';
 
-import { useTelegramBackToRoot } from '../../lib/useTelegramBackToRoot';
+import { useTelegramBackButton } from '../../lib/useTelegramBackButton';
 
-export function SectionLayout({ children, className }: { children: ReactNode; className?: string }) {
-  useTelegramBackToRoot();
+type SectionLayoutProps = {
+  children: ReactNode;
+  className?: string;
+  showBackButton?: boolean;
+};
 
-  const classes = ['section-layout', className].filter(Boolean).join(' ');
+export function SectionLayout({
+  children,
+  className,
+  showBackButton = true,
+}: SectionLayoutProps) {
+  useTelegramBackButton(showBackButton);
+
+  const classes = ['m7-miniapp-root', 'section-layout', className].filter(Boolean).join(' ');
 
   return <div className={classes}>{children}</div>;
 }
