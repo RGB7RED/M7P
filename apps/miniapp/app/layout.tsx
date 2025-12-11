@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { MainTabs } from '../components/MainTabs';
 import { AuthForm } from '../components/AuthForm';
 import { getCurrentUser } from '../lib/currentUser';
+import { MainNavigation } from '../components/MainNavigation';
 
 export const metadata: Metadata = {
   title: 'М7 платформа — мини-приложение',
@@ -17,14 +17,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="ru">
       <body>
         <header className="header">
-          <div>
+          <div className="header-start">
             <div className="logo">М7 платформа</div>
-            <div className="subtitle">Знакомства · Маркет · Жильё · Работа</div>
+            <MainNavigation />
           </div>
           <span className="subtitle">{currentUser ? `@${currentUser.telegram_username}` : 'Mini App'}</span>
         </header>
         <main>{currentUser ? children : <AuthForm />}</main>
-        {currentUser ? <MainTabs /> : null}
       </body>
     </html>
   );
