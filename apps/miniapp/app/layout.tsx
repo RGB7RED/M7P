@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { MainTabs } from '../components/MainTabs';
 import { AuthForm } from '../components/AuthForm';
 import { getCurrentUser } from '../lib/currentUser';
 
@@ -16,11 +15,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="ru">
       <body>
-        <header className="header">
-          <div className="header-title">М7 платформа</div>
-        </header>
         <main>{currentUser ? children : <AuthForm />}</main>
-        {currentUser ? <MainTabs /> : null}
       </body>
     </html>
   );

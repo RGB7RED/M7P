@@ -324,13 +324,22 @@ export default function JobsPage() {
             <p className="subtitle">Лента, личные объявления и форма</p>
           </div>
           <div className="links-grid">
-            <button className={`ghost-btn ${activeTab === 'feed' ? 'tab-active' : ''}`} onClick={() => setActiveTab('feed')}>
+            <button
+              className={`ghost-btn ${activeTab === 'feed' ? 'ghost-btn-active' : ''}`}
+              onClick={() => setActiveTab('feed')}
+            >
               Лента
             </button>
-            <button className={`ghost-btn ${activeTab === 'mine' ? 'tab-active' : ''}`} onClick={() => setActiveTab('mine')}>
+            <button
+              className={`ghost-btn ${activeTab === 'mine' ? 'ghost-btn-active' : ''}`}
+              onClick={() => setActiveTab('mine')}
+            >
               Мои объявления
             </button>
-            <button className={`ghost-btn ${activeTab === 'form' ? 'tab-active' : ''}`} onClick={() => setActiveTab('form')}>
+            <button
+              className={`ghost-btn ${activeTab === 'form' ? 'ghost-btn-active' : ''}`}
+              onClick={() => setActiveTab('form')}
+            >
               Создать / редактировать
             </button>
           </div>

@@ -69,16 +69,16 @@ a {
 main {
   max-width: 760px;
   margin: 0 auto;
-  padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 16px calc(32px + env(safe-area-inset-bottom, 0px));
 }
 
 .section-layout {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 4px 0 24px;
+  padding: 6px 0 24px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .section-header-card {
@@ -243,29 +243,6 @@ main {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
-}
-
-.header {
-  position: sticky;
-  top: 0;
-  backdrop-filter: blur(18px);
-  background: rgba(243, 244, 246, 0.96);
-  border-bottom: 1px solid var(--border-subtle);
-  min-height: 64px;
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  z-index: 10;
-}
-
-.header-title {
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  font-size: 20px;
-  line-height: 1.4;
-  text-align: center;
 }
 
 .subtitle {
@@ -561,41 +538,7 @@ select:focus {
   background: var(--accent-soft);
 }
 
-.tabs {
-  position: sticky;
-  bottom: 0;
-  min-height: 82px;
-  padding: 14px 16px calc(18px + env(safe-area-inset-bottom, 0px));
-  background: rgba(243, 244, 246, 0.98);
-  backdrop-filter: blur(18px);
-  display: flex;
-  gap: 8px;
-  border-top: 1px solid var(--border-subtle);
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: none;
-  align-items: center;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.tab {
-  text-align: center;
-  min-height: 56px;
-  padding: 14px 18px;
-  border-radius: var(--radius-pill);
-  color: #111827;
-  font-weight: 600;
-  font-size: 14px;
-  border: 1px solid transparent;
-  background: transparent;
-  flex: 0 0 auto;
-  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.tab-active {
+.ghost-btn-active {
   background: #111827;
   color: #f3f4f6;
   border-color: #111827;
@@ -859,10 +802,6 @@ select:focus {
   background: rgba(229, 231, 235, 0.7);
 }
 
-.tabs + main {
-  margin-bottom: 80px;
-}
-
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -928,9 +867,5 @@ select:focus {
 @media (max-width: 720px) {
   .card {
     padding: 18px 18px;
-  }
-
-  .tabs {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
