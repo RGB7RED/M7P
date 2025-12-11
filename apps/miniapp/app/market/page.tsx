@@ -314,19 +314,19 @@ export default function MarketPage() {
           </div>
           <div className="links-grid">
             <button
-              className={`ghost-btn ${activeTab === 'feed' ? 'tab-active' : ''}`}
+              className={`ghost-btn ${activeTab === 'feed' ? 'ghost-btn-active' : ''}`}
               onClick={() => setActiveTab('feed')}
             >
               Лента
             </button>
             <button
-              className={`ghost-btn ${activeTab === 'mine' ? 'tab-active' : ''}`}
+              className={`ghost-btn ${activeTab === 'mine' ? 'ghost-btn-active' : ''}`}
               onClick={() => setActiveTab('mine')}
             >
               Мои объявления
             </button>
             <button
-              className={`ghost-btn ${activeTab === 'form' ? 'tab-active' : ''}`}
+              className={`ghost-btn ${activeTab === 'form' ? 'ghost-btn-active' : ''}`}
               onClick={() => setActiveTab('form')}
             >
               Создать / редактировать
