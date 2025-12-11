@@ -318,6 +318,64 @@ main {
   overflow: hidden;
 }
 
+.m7-map-marker {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.m7-map-marker-dating {
+  background: #ff3b81;
+}
+
+.m7-map-marker-market {
+  background: #3b82f6;
+}
+
+.m7-map-marker-housing {
+  background: #22c55e;
+}
+
+.m7-map-marker-job {
+  background: #f59e0b;
+}
+
+.m7-map-popup {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.m7-map-popup-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.m7-map-popup-subtitle {
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.m7-map-popup-button {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.m7-map-popup-button:hover {
+  background: #eef2ff;
+  border-color: #cbd5e1;
+}
+
 .section-list {
   list-style: none;
   padding: 0;
