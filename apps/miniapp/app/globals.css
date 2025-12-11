@@ -1,3 +1,5 @@
+@import url('leaflet/dist/leaflet.css');
+
 :root {
   /* Общий фон приложения */
   --bg: #e5e7eb; /* светло-серый с лёгким синим оттенком */
