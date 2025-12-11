@@ -8,18 +8,18 @@ export default function MapsPage() {
       <TelegramBackToRoot />
       <SectionHeaderCard
         title="Карты"
-        subtitle="Раздел в разработке: здесь будут отображаться объявления и люди на карте города."
+        subtitle="Объявления на карте. В будущем здесь появятся точки со знакомствами, товарами, жильём и работой."
       />
 
-      <section className="card">
-        <h2 className="card-title">В разработке</h2>
-        <p className="card-subtitle">
-          В будущем здесь появятся карты с объявлениями по знакомствам, маркету, жилью и работе.
-        </p>
-        <p className="card-footnote">
-          Сейчас раздел находится в разработке и доступен только для внутреннего тестирования.
-        </p>
-      </section>
+      <div className="map-card">
+        <iframe
+          src="https://yandex.ru/map-widget/v1/?um=constructor%3A0226188669e64f9b8b14b21c07d290506c0a203448b40eba49f326390e6c6e02&source=constructor"
+          className="map-frame"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          frameBorder={0}
+        />
+      </div>
     </SectionLayout>
   );
 }

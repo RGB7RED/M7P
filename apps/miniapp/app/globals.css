@@ -309,6 +309,23 @@ main {
   line-height: 1.6;
 }
 
+.map-card {
+  margin-top: 6px;
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: var(--shadow-strong);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.map-frame {
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  max-height: 70vh;
+  border: 0;
+}
+
 .section-list {
   list-style: none;
   padding: 0;
