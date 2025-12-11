@@ -114,6 +114,24 @@ export function MapView({ points }: MapViewProps) {
 
       markersRef.current.push(marker);
     });
+
+    if (!points.length) {
+      mapRef.current.setCenter(INITIAL_CENTER);
+      mapRef.current.setZoom(INITIAL_ZOOM);
+      return;
+    }
+
+    if (points.length === 1) {
+      mapRef.current.flyTo({ center: [points[0].mapLng, points[0].mapLat], zoom: 12 });
+      return;
+    }
+
+    const bounds = points.reduce((acc, point) => {
+      acc.extend([point.mapLng, point.mapLat]);
+      return acc;
+    }, new maplibregl.LngLatBounds([points[0].mapLng, points[0].mapLat], [points[0].mapLng, points[0].mapLat]));
+
+    mapRef.current.fitBounds(bounds, { padding: 32, maxZoom: 13, duration: 500 });
   }, [points]);
 
   return <div ref={containerRef} className="m7-map-container" />;
