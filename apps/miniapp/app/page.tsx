@@ -86,24 +86,26 @@ export default async function HomePage() {
   const sections = buildSections(isModerator);
 
   return (
-    <div className="hub-layout">
+    <main className="m7-miniapp-root">
       <TelegramBackButtonReset />
-      <section className="hub-cover">
-        <p className="hub-cover-kicker">Главный экран</p>
-        <h1 className="hub-cover-title">M7 платформа</h1>
-        <p className="hub-cover-subtitle">
-          Честные знакомства, маркет, жильё и работа внутри Telegram Mini App. Сейчас идёт внутренняя разработка MVP.
-        </p>
-      </section>
+      <div className="hub-layout">
+        <section className="hub-cover">
+          <p className="hub-cover-kicker">Главный экран</p>
+          <h1 className="hub-cover-title">M7 платформа</h1>
+          <p className="hub-cover-subtitle">
+            Честные знакомства, маркет, жильё и работа внутри Telegram Mini App. Сейчас идёт внутренняя разработка MVP.
+          </p>
+        </section>
 
-      <section className="hub-list-block">
-        <h2 className="hub-section-title">Разделы</h2>
-        <ul className="hub-list" aria-label="Разделы платформы">
-          {sections.map((section) => (
-            <HubListItem key={section.href} section={section} />
-          ))}
-        </ul>
-      </section>
-    </div>
+        <section className="hub-list-block">
+          <h2 className="hub-section-title">Разделы</h2>
+          <ul className="hub-list" aria-label="Разделы платформы">
+            {sections.map((section) => (
+              <HubListItem key={section.href} section={section} />
+            ))}
+          </ul>
+        </section>
+      </div>
+    </main>
   );
 }

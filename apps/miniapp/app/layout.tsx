@@ -15,7 +15,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="ru">
       <body className="miniapp-body">
-        <main className="miniapp-root">{currentUser ? children : <AuthForm />}</main>
+        <main className="miniapp-root">
+          {currentUser ? children : <div className="m7-miniapp-root"><AuthForm /></div>}
+        </main>
       </body>
     </html>
   );
