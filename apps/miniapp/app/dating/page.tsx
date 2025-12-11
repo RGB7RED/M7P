@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -639,6 +640,15 @@ export default function DatingPage() {
         title="Знакомства"
         subtitle="Свайпы, быстрые мэтчи и переход в Telegram. Заполните анкету, чтобы попадать в ленту и получать взаимные лайки."
       />
+
+      <div className="actions-row" style={{ marginBottom: '12px' }}>
+        <Link href="/profile?tab=dating" className="primary-btn">
+          Настроить анкету
+        </Link>
+        <Link href="/profile?tab=basic" className="ghost-btn">
+          Основное о себе
+        </Link>
+      </div>
 
       <div className="grid">
         {matchNotice ? <div className="hint success">{matchNotice}</div> : null}
