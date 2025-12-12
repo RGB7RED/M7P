@@ -11,7 +11,7 @@ import { SectionLayout } from '../components/SectionLayout';
 
 const TABS = [
   { key: 'basic', label: 'Основное' },
-  { key: 'dating', label: 'Знакомства' },
+  { key: 'dating', label: 'Анкета' },
   { key: 'listings', label: 'Мои объявления' },
 ] as const;
 
