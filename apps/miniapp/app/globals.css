@@ -666,9 +666,9 @@ select:focus {
 }
 
 .tab-active {
-  background: var(--m7-color-dark-bg);
-  color: var(--m7-color-dark-text-on-dark);
-  border-color: var(--m7-color-dark-bg);
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   font-weight: 600;
 }
