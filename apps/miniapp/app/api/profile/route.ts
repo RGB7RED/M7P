@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getCurrentUser } from '../../../lib/currentUser';
 import { getServiceSupabaseClient } from '../../../lib/supabaseConfig';
-import { isMinorAge, isUserGender, validateBirthDate } from '../../../lib/profileValidation';
+import { isUserGender, validateBirthDate } from '../../../lib/profileValidation';
 
 type ProfileStats = {
   hasDatingProfile: boolean;
@@ -21,15 +21,13 @@ type UserProfile = {
   gender: string;
   birthDate: string | null;
   city: string | null;
-  about: string | null;
-  isAdultProfile: boolean;
 };
 
 async function fetchUserProfile(userId: string) {
   const supabase = getServiceSupabaseClient();
   const { data: user, error } = await supabase
     .from('users')
-    .select('id, telegram_username, m7_nickname, gender, birth_date, city, about, is_adult_profile')
+    .select('id, telegram_username, m7_nickname, gender, birth_date, city')
     .eq('id', userId)
     .maybeSingle();
 
@@ -44,8 +42,6 @@ async function fetchUserProfile(userId: string) {
     gender: user.gender ?? 'na',
     birthDate: user.birth_date ?? null,
     city: user.city ?? null,
-    about: user.about ?? null,
-    isAdultProfile: Boolean(user.is_adult_profile),
   };
 
   return profile;
@@ -108,14 +104,12 @@ export async function PUT(req: Request) {
       gender?: string;
       birthDate?: string | null;
       city?: string | null;
-      about?: string | null;
-      isAdultProfile?: boolean;
     };
 
     const supabase = getServiceSupabaseClient();
     const { data: existingUser, error: lookupError } = await supabase
       .from('users')
-      .select('id, gender, birth_date, city, about, is_adult_profile')
+      .select('id, gender, birth_date, city')
       .eq('id', currentUser.userId)
       .maybeSingle();
 
@@ -137,31 +131,17 @@ export async function PUT(req: Request) {
       return NextResponse.json({ ok: false, error: birthDateValidation.error }, { status: 400 });
     }
 
-    const age = birthDateValidation.birthDate ? birthDateValidation.age : null;
-    const isAdultProfile = body.isAdultProfile ?? existingUser.is_adult_profile ?? false;
-    if (isAdultProfile && (age === null || isMinorAge(age))) {
-      return NextResponse.json({ ok: false, error: 'ADULT_PROFILE_REQUIRES_18_PLUS' }, { status: 400 });
-    }
-
     const updates: Record<string, unknown> = {};
 
     if (body.gender !== undefined) updates.gender = gender;
     if (birthDateValidation.birthDate !== undefined) updates.birth_date = birthDateValidation.birthDate;
     if (body.city !== undefined) updates.city = body.city ?? null;
-    if (body.about !== undefined) updates.about = body.about ?? null;
-    if (body.isAdultProfile !== undefined) {
-      updates.is_adult_profile = Boolean(body.isAdultProfile);
-    }
-
-    if (isMinorAge(age) && existingUser.is_adult_profile) {
-      updates.is_adult_profile = false;
-    }
 
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
       .update(updates)
       .eq('id', currentUser.userId)
-      .select('id, telegram_username, m7_nickname, gender, birth_date, city, about, is_adult_profile')
+      .select('id, telegram_username, m7_nickname, gender, birth_date, city')
       .single();
 
     if (updateError || !updatedUser) {

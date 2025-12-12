@@ -45,7 +45,7 @@ export async function GET() {
     const supabase = getServiceSupabaseClient();
     const { data: profile, error } = await supabase
       .from('dating_profiles')
-      .select('*, users:users!inner(gender, birth_date, city, is_adult_profile)')
+      .select('*, users:users!inner(gender, birth_date, city)')
       .eq('user_id', currentUser.userId)
       .maybeSingle();
 
@@ -60,7 +60,6 @@ export async function GET() {
           gender: userRow.gender ?? 'na',
           birthDate: userRow.birth_date ?? null,
           city: userRow.city ?? null,
-          isAdultProfile: Boolean(userRow.is_adult_profile),
         }
       : null;
 
@@ -237,7 +236,7 @@ export async function PUT(req: Request) {
     const [{ data: userRow, error: userError }, { data: existingProfile, error: profileLookupError }] = await Promise.all([
       supabase
         .from('users')
-        .select('id, gender, birth_date, city, is_adult_profile')
+        .select('id, gender, birth_date, city')
         .eq('id', currentUser.userId)
         .maybeSingle(),
       supabase
@@ -270,10 +269,6 @@ export async function PUT(req: Request) {
 
     if (!validation.ok) {
       return NextResponse.json({ ok: false, error: validation.error }, { status: 400 });
-    }
-
-    if (userIsMinor && userRow.is_adult_profile) {
-      await supabase.from('users').update({ is_adult_profile: false }).eq('id', currentUser.userId);
     }
 
     const payload = {

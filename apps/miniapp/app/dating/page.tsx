@@ -147,7 +147,7 @@ function ProfileCard({
 
       {profile.comment ? (
         <div className="profile-section">
-          <div className="label">Комментарий</div>
+          <div className="label">Комментарий / О себе</div>
           <p>{profile.comment}</p>
         </div>
       ) : null}
@@ -299,7 +299,7 @@ function ProfileForm({
         </label>
 
         <label className="input-label">
-          Комментарий
+          Комментарий / О себе
           <textarea
             className="input textarea"
             value={form.comment ?? ''}
