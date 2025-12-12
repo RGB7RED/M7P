@@ -632,7 +632,7 @@ select:focus {
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   padding: 6px;
   background: var(--panel);
   border: 1px solid var(--border-subtle);
@@ -648,8 +648,8 @@ select:focus {
   background: transparent;
   color: var(--m7-color-dark-text-main);
   border-radius: var(--radius-pill);
-  padding: 8px 14px;
-  font-size: 14px;
+  padding: 7px 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast),
