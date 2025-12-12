@@ -8,6 +8,12 @@
   --panel: #f9fafb; /* светлая панель */
   --panel-elevated: #ffffff;
 
+  /* Тёмные чипы и табы */
+  --m7-color-dark-bg: #2a2d33;
+  --m7-color-dark-border: #b0b4bd;
+  --m7-color-dark-text-on-dark: #ffffff;
+  --m7-color-dark-text-main: #2a2d33;
+
   /* Текст */
   --text: #111827; /* почти чёрный */
   --muted: #6b7280; /* приглушённый серый для вторичного текста */
@@ -611,7 +617,7 @@ select:focus {
 .badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .badge {
@@ -624,33 +630,100 @@ select:focus {
   font-weight: 600;
 }
 
-.pill,
-.chip {
-  background: #f3f4f6;
-  color: var(--text);
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-pill);
-  padding: 6px 10px;
-  font-size: 12px;
-  border: 1px solid transparent;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast),
-    border-color var(--transition-fast);
+  width: fit-content;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.pill:hover,
-.chip:hover {
-  transform: translateY(-1px);
+.tab {
+  appearance: none;
+  border: 1px solid var(--m7-color-dark-border);
+  background: transparent;
+  color: var(--m7-color-dark-text-main);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.tab:hover {
+  background: rgba(42, 45, 51, 0.04);
+}
+
+.tab:active {
+  background: rgba(42, 45, 51, 0.08);
+  transform: translateY(0.5px);
+}
+
+.tab-active {
+  background: var(--m7-color-dark-bg);
+  color: var(--m7-color-dark-text-on-dark);
+  border-color: var(--m7-color-dark-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.pill,
+.chip {
+  background: transparent;
+  color: var(--m7-color-dark-text-main);
+  border-radius: var(--radius-pill);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--m7-color-dark-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+  cursor: default;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.pill:hover:not(.pill-active):not(.selected),
+.chip:hover:not(.chip-active) {
+  background: rgba(42, 45, 51, 0.04);
+}
+
+.pill:active:not(.pill-active):not(.selected),
+.chip:active:not(.chip-active) {
+  background: rgba(42, 45, 51, 0.08);
+  transform: translateY(0.5px);
 }
 
 .pill-muted {
   color: var(--muted);
-  background: #eceff3;
+  background: rgba(42, 45, 51, 0.06);
+  border-color: var(--m7-color-dark-border);
+}
+
+.selectable-pill {
+  cursor: pointer;
+  user-select: none;
+}
+
+.selectable-pill input {
+  display: none;
 }
 
 .chip-active,
-.pill-active {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  border-color: var(--accent);
+.pill-active,
+.selectable-pill.selected {
+  background: var(--m7-color-dark-bg);
+  color: var(--m7-color-dark-text-on-dark);
+  border-color: var(--m7-color-dark-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .card-actions {

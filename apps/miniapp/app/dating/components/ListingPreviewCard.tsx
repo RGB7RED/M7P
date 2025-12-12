@@ -26,7 +26,7 @@ export function ListingPreviewCard({ listing, onClick }: { listing: ListingPrevi
           <div className="profile-title">{listing.title}</div>
           {listing.city ? <div className="profile-subtitle">{listing.city}</div> : null}
         </div>
-        <span className="pill">{SECTION_LABELS[listing.section]}</span>
+        <span className="pill pill-active">{SECTION_LABELS[listing.section]}</span>
       </div>
 
       {listing.priceLabel ? <div className="label">{listing.priceLabel}</div> : null}
