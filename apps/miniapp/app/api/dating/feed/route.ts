@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         .maybeSingle(),
       supabase
         .from('users')
-        .select('gender, birth_date, city, is_adult_profile')
+        .select('gender, birth_date, city')
         .eq('id', currentUser.userId)
         .maybeSingle(),
     ]);
@@ -94,17 +94,16 @@ export async function GET(req: Request) {
     const minBirthDate = new Date(now);
     minBirthDate.setFullYear(now.getFullYear() - preferredAgeMax);
 
-    const adultBoundary = new Date(now);
-    adultBoundary.setFullYear(now.getFullYear() - ADULT_AGE);
-
     const birthDateUpperBound = maxBirthDate.toISOString().slice(0, 10);
     const birthDateLowerBound = minBirthDate.toISOString().slice(0, 10);
+    const adultBoundary = new Date(now);
+    adultBoundary.setFullYear(now.getFullYear() - ADULT_AGE);
     const adultBoundaryIso = adultBoundary.toISOString().slice(0, 10);
 
     let query = supabase
       .from('dating_profiles')
       .select(
-        'id, user_id, nickname, looking_for, offer, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, show_listings, show_market_listings_in_profile, show_housing_listings_in_profile, show_job_listings_in_profile, is_active, last_activated_at, is_verified, status, created_at, users!inner(id,status,gender,birth_date,city,is_adult_profile)',
+        'id, user_id, nickname, looking_for, offer, comment, purposes, photo_urls, has_photo, link_market, link_housing, link_jobs, show_listings, show_market_listings_in_profile, show_housing_listings_in_profile, show_job_listings_in_profile, is_active, last_activated_at, is_verified, status, created_at, users!inner(id,status,gender,birth_date,city)',
       )
       .eq('status', 'active')
       .eq('is_active', true)
@@ -133,9 +132,9 @@ export async function GET(req: Request) {
     }
 
     if (userIsMinor) {
-      query = query.eq('users.is_adult_profile', false).lt('users.birth_date', adultBoundaryIso);
-    } else if (userRow && !userRow.is_adult_profile) {
-      query = query.eq('users.is_adult_profile', false);
+      query = query.gte('users.birth_date', adultBoundaryIso);
+    } else {
+      query = query.lt('users.birth_date', adultBoundaryIso);
     }
 
     if (excludedProfileIds.length) {

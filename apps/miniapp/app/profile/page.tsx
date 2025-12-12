@@ -24,8 +24,6 @@ type ProfileResponse = {
     gender: string;
     birthDate: string | null;
     city: string | null;
-    about: string | null;
-    isAdultProfile: boolean;
   };
   stats?: {
     hasDatingProfile: boolean;
@@ -46,7 +44,6 @@ type DatingProfileResponse = {
     gender: string;
     birthDate: string | null;
     city: string | null;
-    isAdultProfile: boolean;
   } | null;
   listings?: any;
   error?: string;
@@ -82,8 +79,6 @@ function BasicTab({ profile, onUpdated }: { profile: ProfileResponse; onUpdated:
     gender: profile.user?.gender ?? 'na',
     birthDate: profile.user?.birthDate ?? '',
     city: profile.user?.city ?? '',
-    about: profile.user?.about ?? '',
-    isAdultProfile: profile.user?.isAdultProfile ?? false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,10 +89,8 @@ function BasicTab({ profile, onUpdated }: { profile: ProfileResponse; onUpdated:
       gender: profile.user?.gender ?? 'na',
       birthDate: profile.user?.birthDate ?? '',
       city: profile.user?.city ?? '',
-      about: profile.user?.about ?? '',
-      isAdultProfile: profile.user?.isAdultProfile ?? false,
     });
-  }, [profile.user?.about, profile.user?.birthDate, profile.user?.city, profile.user?.gender, profile.user?.isAdultProfile]);
+  }, [profile.user?.birthDate, profile.user?.city, profile.user?.gender]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -112,8 +105,6 @@ function BasicTab({ profile, onUpdated }: { profile: ProfileResponse; onUpdated:
           gender: form.gender,
           birthDate: form.birthDate || null,
           city: form.city,
-          about: form.about,
-          isAdultProfile: form.isAdultProfile,
         }),
       });
 
@@ -176,26 +167,6 @@ function BasicTab({ profile, onUpdated }: { profile: ProfileResponse; onUpdated:
           onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
           placeholder="Например, Санкт-Петербург"
         />
-      </label>
-
-      <label className="field">
-        <span className="label">О себе</span>
-        <textarea
-          className="textarea"
-          rows={4}
-          value={form.about ?? ''}
-          onChange={(e) => setForm((prev) => ({ ...prev, about: e.target.value }))}
-          placeholder="Коротко опишите себя"
-        />
-      </label>
-
-      <label className="checkbox">
-        <input
-          type="checkbox"
-          checked={form.isAdultProfile}
-          onChange={(e) => setForm((prev) => ({ ...prev, isAdultProfile: e.target.checked }))}
-        />
-        <span>Профиль 18+</span>
       </label>
 
       <div className="card-actions">
@@ -368,7 +339,7 @@ function DatingTab() {
       </label>
 
       <label className="field">
-        <span className="label">Комментарий</span>
+        <span className="label">Комментарий / О себе</span>
         <textarea
           className="textarea"
           rows={2}
